@@ -1,0 +1,53 @@
+Option Explicit
+
+Private rowCount As Integer
+Private colCount As Integer
+
+Public Sub fillPivotBlanks()
+    Dim firstColumn As Integer
+    Dim firstRow As Integer
+    Dim lastColumn As Integer
+    Dim lastRow As Integer
+    
+    If ActiveCell.Value = "" Then
+        MsgBox ("Starting on Empty Cell! Macro will now quit.")
+        End
+    End If
+    
+    firstColumn = ActiveCell.Column
+    firstRow = ActiveCell.Row
+    lastColumn = firstColumn + Selection.Columns.Count - 1
+    lastRow = firstRow + Selection.Rows.Count - 1
+
+'    firstColumn = ActiveCell.column
+'    firstRow = ActiveCell.row
+'    lastColumn = firstColumn + numberOfColumnsToRight(firstRow, firstColumn)
+'    lastRow = firstRow + numberOfRowsDown(firstRow, lastColumn)
+    
+    For colCount = firstColumn To lastColumn
+        For rowCount = firstRow To lastRow
+            If Cells(rowCount, colCount).Value = "" Then
+                Cells(rowCount, colCount).Value = Cells(rowCount - 1, colCount).Value
+            End If
+        Next rowCount
+    Next colCount
+End Sub
+
+
+Private Function numberOfColumnsToRight(currentRow As Integer, startColumn As Integer) As Integer
+    Dim colCount As Integer
+    colCount = startColumn
+    Do Until Cells(currentRow, colCount + 1).Value = ""
+        colCount = colCount + 1
+    Loop
+    numberOfColumnsToRight = colCount
+End Function
+
+Private Function numberOfRowsDown(startRow As Integer, currentColumn As Integer) As Integer
+    Dim rowCount As Integer
+    rowCount = startRow
+    Do Until Cells(rowCount + 1, currentColumn).Value = ""
+        rowCount = rowCount + 1
+    Loop
+    numberOfRowsDown = rowCount
+End Function

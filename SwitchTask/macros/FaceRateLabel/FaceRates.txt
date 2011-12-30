@@ -1,0 +1,114 @@
+Option Explicit
+
+''
+'' My varaiables (amc79)
+''
+Private rowcount As Integer
+Private maxFaceRow As Integer
+'Private whichRun As Integer
+'Private lastRow As Integer
+'Private lastRowFirstRun As Integer
+
+' overall constants used in program
+Private Const defaultSillyNumber = -47 ' if this appears in output then something's not working
+Private Const startRowCount = 4
+Private Const maxRowCount = 600
+Private Const runChangeTest = "Run 2"
+Private Const feedNONE = "NONE"
+
+Private Const FaceSheet = "FaceRate"
+Private Const FaceSheet_name = 2
+Private Const FaceSheet_rating = 4
+
+' raw data column numbers
+Private Const dataColStimShown = 1 ' column A on sheet
+Private Const dataColFeedbackPic = 3 ' column C on sheet
+Private Const dataColStimChosen = 4 ' column D on sheet
+Private Const dataColFeedback = 5 ' column E on sheet
+Private Const dataColCriterion = 7 ' column G on sheet
+Private Const dataColTrialError = 8 ' column H on sheet
+Private Const dataColFaceRating = 9 ' column I on sheet
+Private Const dataColStimOn = 10 ' column J on sheet
+Private Const dataColRespTime = 11 ' column K on sheet
+Private Const dataColFeedbackOn = 12 ' column L on sheet
+Private Const dataColFeedbackDur = 13 ' column M on sheet
+
+Public Sub assignFaceRates()
+    maxFaceRow = numberOfRowsDown(1, 2, Sheet3)
+    Call findRating
+End Sub
+
+Private Sub findRating()
+    Dim firstCell As String
+    Dim splitFacePic As Variant
+    Dim currentFace As String
+
+    For rowcount = startRowCount To maxRowCount
+        firstCell = Cells(rowcount, dataColStimShown)
+        
+        splitFacePic = Split((Cells(rowcount, dataColFeedbackPic)), "_prb")
+        currentFace = splitFacePic(LBound(splitFacePic))
+        
+        If firstCell <> "" And Left(firstCell, 5) <> runChangeTest Then
+            If currentFace <> feedNONE Then
+                Cells(rowcount, dataColFaceRating) = getFaceRating(currentFace)
+            End If
+        End If
+    Next rowcount
+End Sub
+
+Private Function getFaceRating(faceToGet As String) 'As Single
+    Dim rowNumber As Integer
+    
+    For rowNumber = 1 To maxFaceRow
+        If faceToGet = Sheets(FaceSheet).Cells(rowNumber, FaceSheet_name) Then
+            getFaceRating = Sheets(FaceSheet).Cells(rowNumber, FaceSheet_rating)
+            Exit Function
+        End If
+    Next rowNumber
+    getFaceRating = defaultSillyNumber ' ideally it shouldn't get to this point at all
+End Function
+
+Private Function numberOfRowsDown(startRow As Integer, currentColumn As Integer, Optional sheetName As Worksheet = ActiveSheet) As Integer
+    Dim rowcount As Integer
+    rowcount = startRow
+    Do Until sheetName.Cells(rowcount + 1, currentColumn).Value = ""
+        rowcount = rowcount + 1
+    Loop
+    numberOfRowsDown = rowcount
+End Function
+
+Function Split(ByVal strIn As String, Optional ByVal strDelim As String = " ", Optional ByVal lCount As Long = -1) As Variant
+    Dim vOut() As Variant
+    Dim strSubString As String
+    Dim k As Integer
+    Dim lDelimPos As Long
+
+    k = 0
+    lDelimPos = InStr(strIn, strDelim)
+
+    Do While (lDelimPos)
+        ' Get everything to the left of the delimiter
+        strSubString = Left(strIn, lDelimPos - 1)
+        ' Make the return array one element larger
+        ReDim Preserve vOut(k)
+        ' Add the new element
+        vOut(k) = strSubString
+        k = k + 1
+        If lCount <> -1 And k = lCount Then
+            Split = vOut
+            Exit Function
+        End If
+        ' Only interested in what's right of delimiter
+        strIn = Right(strIn, (Len(strIn) - (lDelimPos + Len(strDelim) - 1)))
+        ' See if delimiter occurs again
+        lDelimPos = InStr(strIn, strDelim)
+    Loop
+
+    ' No more delimiters in string.
+    ' Add what's left as last element
+    ReDim Preserve vOut(k)
+    vOut(k) = strIn
+
+    Split = vOut
+End Function

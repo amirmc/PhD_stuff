@@ -1,0 +1,152 @@
+Dim x As Integer
+Dim j As Integer
+Dim k As Integer
+Dim Randomnumber As Integer
+Dim Last As Integer
+
+Dim iBlocknumber As Integer
+
+Dim strRewardedStim As String
+Dim strUnRewardedStim As String
+Dim tmp_RewardSwap As String
+Const strNonRewardedStim = 0
+Dim bRevBlockSwitch As Boolean
+Dim Current(1 To 3) As String
+Dim StimSet(1 To 3) As String
+Dim PrevStimSet(1 To 3) As String
+
+Sub createRandomisedFile()
+    '
+    ' Macro1 Macro
+    ' Macro recorded 5/29/2003 by CBU
+    '
+
+    'adapted by amc79  01/09/2005
+    Randomize
+        
+    bRevBlockSwitch = False
+    iBlocknumber = 0
+    For x = 1 To 500
+        Randomize
+        
+        iBlocknumber = iBlocknumber + 1
+        If Cells((iBlocknumber * 6) - 5, 1).value = "END" Then End
+        
+        StimSet(1) = (Cells((iBlocknumber * 6) - 5, 1).value)
+        StimSet(2) = (Cells((iBlocknumber * 6) - 4, 1).value)
+        StimSet(3) = (Cells((iBlocknumber * 6) - 3, 1).value)
+        
+        bRevBlockSwitch = Not bRevBlockSwitch
+        
+        Call RandomizeList(StimSet)
+        If bRevBlockSwitch = True Then
+            If Right(StimSet(1), 1) = "X" Then
+                strRewardedStim = StimSet(2)
+                strUnRewardedStim = StimSet(3)
+            Else
+                strRewardedStim = StimSet(1)
+                If Right(StimSet(2), 1) = "X" Then
+                    strUnRewardedStim = StimSet(3)
+                Else
+                    strUnRewardedStim = StimSet(2)
+                End If
+            End If
+        ElseIf Not bRevBlockSwitch Then
+            'swap reward contingencies
+            tmp_RewardSwap = strUnRewardedStim
+            strUnRewardedStim = strRewardedStim
+            strRewardedStim = tmp_RewardSwap
+            
+'            If StimSet(1) = strRewardedStim Then
+'                If Right(StimSet(2), 1) = "X" Then
+'                    strRewardedStim = StimSet(3)
+'                Else
+'                    strRewardedStim = StimSet(2)
+'                End If
+'            Else
+'                If Right(StimSet(1), 1) = "X" Then
+'                    strRewardedStim = StimSet(2)
+'                Else
+'                    strRewardedStim = StimSet(1)
+'                End If
+'            End If
+        End If
+        
+        'count through the columns
+        For j = 1 To 12
+            
+            Call RandomizeList(StimSet)
+            Call checkRandomList(StimSet)
+            
+            'write the randomised list out to the current column
+            Cells((iBlocknumber * 6) - 5, j).value = StimSet(1)
+            Cells((iBlocknumber * 6) - 4, j).value = StimSet(2)
+            Cells((iBlocknumber * 6) - 3, j).value = StimSet(3)
+            
+            Dim posn As Integer
+            For posn = LBound(StimSet) To UBound(StimSet)
+                PrevStimSet(posn) = StimSet(posn)
+            Next posn
+            
+            'sort out the rewards for each stim
+            Dim count As Integer
+            For count = 1 To 3
+'                If Cells((iBlocknumber * 6) - 2 - count, j).value = (Current(count) & strRewardedStim) Then
+                If Cells((iBlocknumber * 6) - 2 - count, j).value = strRewardedStim Then
+                    Call setRewards(count, 1)
+                Else
+                    Call setRewards(count, 0)
+                End If
+            Next count
+            
+        Next j
+    
+        If Cells((iBlocknumber * 6) - 5, j).value = "END" Then Exit Sub
+    
+    Next x
+    
+End Sub
+
+Sub RandomizeList(items() As String)
+    Randomize
+    Dim min_item As Integer
+    Dim max_item As Integer
+    Dim i As Integer
+    Dim j As Integer
+    Dim tmp_value As String
+
+    min_item = LBound(items)
+    max_item = UBound(items)
+    
+    For i = min_item To max_item - 1
+        ' Randomly assign item number i.
+        j = Int((max_item - i + 1) * Rnd + i)
+        tmp_value = items(i)
+        items(i) = items(j)
+        items(j) = tmp_value
+    Next i
+End Sub
+
+Sub checkRandomList(items() As String)
+    Randomize
+    Dim b_samelist(1 To 3) As Boolean
+    Dim posn As Integer
+    
+    b_samelist(1) = False
+    b_samelist(2) = False
+    b_samelist(3) = False
+    For posn = LBound(items) To UBound(items)
+        If items(posn) = PrevStimSet(posn) Then b_samelist(posn) = True
+    Next posn
+    
+    If b_samelist(1) And b_samelist(2) And b_samelist(3) Then
+        Call RandomizeList(items)
+        Call checkRandomList(items)
+    Else
+        Exit Sub
+    End If
+End Sub
+
+Sub setRewards(posn As Integer, stimValue As Integer)
+    Cells((iBlocknumber * 6) - posn + 1, j).value = stimValue
+End Sub

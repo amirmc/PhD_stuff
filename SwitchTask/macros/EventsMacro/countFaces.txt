@@ -1,0 +1,94 @@
+Option Explicit
+
+''
+'' My varaiables (amc79)
+''
+'Private rowCount As Integer
+Private maxFaceRow As Integer
+
+' overall constants used in program
+Private Const defaultSillyNumber = -47 ' if this appears in output then something's not working
+Private Const startRowCount = 4
+Private Const maxRowCount = 600
+Private Const runChangeTest = "Run 2"
+Private Const feedNONE = "NONE"
+
+Private Const FaceSheet = "FaceRate"
+Private Const FaceSheet_name = 2
+Private Const FaceSheet_rating = 4
+
+' raw data column numbers
+Private Const dataColStimShown = 1 ' column A on sheet
+Private Const dataColFeedbackPic = 3 ' column C on sheet
+Private Const dataColStimChosen = 4 ' column D on sheet
+Private Const dataColFeedback = 5 ' column E on sheet
+Private Const dataColCriterion = 7 ' column G on sheet
+Private Const dataColTrialError = 8 ' column H on sheet
+Private Const dataColFaceRating = 9 ' column I on sheet
+Private Const dataColStimOn = 10 ' column J on sheet
+Private Const dataColRespTime = 11 ' column K on sheet
+Private Const dataColFeedbackOn = 12 ' column L on sheet
+Private Const dataColFeedbackDur = 13 ' column M on sheet
+' output column numbers
+Private Const outColFacePres = 31 ' column AE on sheet
+
+Public Sub countFacePres()
+    maxFaceRow = numberOfRowsDown(2, 2, FaceSheet)
+    Call countAllFaces
+    Call checkAllFacesAreLabelled
+End Sub
+
+Private Sub countAllFaces()
+    Dim thisFacePic As String
+    Dim faceToCount As String
+    Dim testFirstCell As String
+    Dim facePicCount As Integer
+    Dim dataRowCount As Integer
+    Dim faceRowCount As Integer
+    Dim splitFacePic As Variant
+    
+    For faceRowCount = 2 To maxFaceRow
+        ' get first face to search for
+        faceToCount = getFaceToCount(faceRowCount, FaceSheet)
+        facePicCount = 0 ' reset counter
+        For dataRowCount = startRowCount To maxRowCount
+            testFirstCell = Cells(dataRowCount, dataColStimShown).Value
+            If testFirstCell <> vbNullString And Left(testFirstCell, 5) <> runChangeTest Then
+                splitFacePic = Split((Cells(dataRowCount, dataColFeedbackPic).Value), "_prb")
+                thisFacePic = splitFacePic(LBound(splitFacePic))
+                If thisFacePic = faceToCount Then
+                    facePicCount = facePicCount + 1
+                    Cells(dataRowCount, outColFacePres).Value = facePicCount
+                End If
+            End If
+        Next dataRowCount
+    Next faceRowCount
+End Sub
+
+Private Sub checkAllFacesAreLabelled()
+    Dim chkRowCount As Integer
+    Dim testFirstCell As String
+    Dim chkFacePic As String
+    Dim chkFacePres As String
+    
+    For chkRowCount = startRowCount To maxRowCount
+        chkFacePic = Cells(chkRowCount, dataColFeedbackPic).Value
+        chkFacePres = Cells(chkRowCount, outColFacePres).Value
+        If chkFacePic <> "" And chkFacePic <> feedNONE And chkFacePres = "" Then
+            Cells(chkRowCount, outColFacePres).Value = feedNONE
+        End If
+    Next chkRowCount
+End Sub
+
+Private Function getFaceToCount(faceSheetRow As Integer, sheetName As String) As String
+        getFaceToCount = Sheets(sheetName).Cells(faceSheetRow, FaceSheet_name) '.Value
+End Function
+
+Private Function numberOfRowsDown(startRow As Integer, currentColumn As Integer, sheetName As String) As Integer
+    Dim rowCount As Integer
+    rowCount = startRow
+    Do Until Sheets(sheetName).Cells(rowCount + 1, currentColumn).Value = ""
+        rowCount = rowCount + 1
+    Loop
+    numberOfRowsDown = rowCount
+End Function

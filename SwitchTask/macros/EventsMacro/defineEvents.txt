@@ -1,0 +1,828 @@
+Option Explicit  ' always put this at the top of files. It means you have to explicitly declare variables.
+
+''
+'' My varaiables (amc79)
+''
+Private rowCount As Integer
+Private whichRun As Integer
+Private lastRow As Integer
+Private lastRowFirstRun As Integer
+Private bModelOnFeedback As Boolean
+Private bModelOnStimulus As Boolean
+
+' overall constants used in program
+Private Const defaultSillyNumber = -47 ' if this appears in output then something's not working
+Private Const startRowCount = 4
+Private Const posFeedback = 1
+Private Const negFeedback = 0
+Private Const prbFeedback = -1
+Private Const maxRowCount = 600
+Private Const discardedScans = 18  ' number of Dummy Scans
+Private Const scannerTR = 1.1
+Private Const runChangeTest = "Run 2"
+Private Const feedNONE = "NONE"
+
+' names of EventTypes
+Private Const eventAcqPhase = "acqPhase"
+Private Const eventCritPhase = "critPhase"
+'Private Const eventCritPhaseRev = "critPhaseRev" ' not used
+Private Const eventReversalPhase = "RevPhase"
+Private Const eventNewSet = "NewSet"
+Private Const eventAcqSwitch = "acqSwitch"
+Private Const eventAcqStay = "acqStay"
+Private Const eventReversal = "Reversal"
+Private Const eventPosFeedback = "Pos"
+Private Const eventNegFeedback = "Neg"
+Private Const eventPrbFeedback = "Prb"
+Private Const eventUndefined = "undefined"
+Private Const eventPrbErrCrit = "PrbErrCrit"
+Private Const addEventSwitch = "Switch"
+Private Const addEventStay = "Stay"
+
+' raw data column numbers
+Private Const dataColStimShown = 1 ' column A on sheet
+Private Const dataColFeedbackPic = 3 ' column C on sheet
+Private Const dataColStimChosen = 4 ' column D on sheet
+Private Const dataColFeedback = 5 ' column E on sheet
+Private Const dataColCriterion = 7 ' column G on sheet
+Private Const dataColTrialError = 8 ' column H on sheet
+Private Const dataColFeedRating = 9 ' column I on sheet
+Private Const dataColStimOn = 10 ' column J on sheet
+Private Const dataColRespTime = 11 ' column K on sheet
+Private Const dataColFeedbackOn = 12 ' column L on sheet
+Private Const dataColFeedbackDur = 13 ' column M on sheet
+
+'calculated data column numbers
+Private Const outColFeedbackOnset = 14 ' column N on sheet
+Private Const outColFeedbackDuration = 15 ' column O on sheet
+Private Const outColRun = 16  ' column P on sheet
+Private Const outColStimNum = 17 ' column Q on sheet
+Private Const outColConsec = 18 ' column R on sheet
+Private Const outColPhase = 19 ' column S on sheet
+Private Const outColCritPhase = 20 ' column T on sheet
+Private Const outColSwitch = 21 ' column U on sheet
+Private Const outColReversals = 22 ' column V on sheet
+Private Const outColNewSetSwitch = 23 ' column W on sheet
+Private Const outColEvents = 24 ' column X on sheet
+Private Const outColFeedEvents = 25 ' column Y on sheet
+Private Const outColStimOnset = 26 ' column Z on sheet
+Private Const outColStimDuration = 27 ' column AA on sheet
+Private Const outColStimEvent = 28 ' column AB on sheet
+Private Const outColPrbErrCritEvent = 29 ' column AC on sheet
+Private Const outColAllEvents = 30 ' column AD on sheet
+Private Const outColFacePres = 31 ' column AE on sheet
+
+
+Public Sub createEventTypes()
+
+'' Decide on one of the following NOW.
+'' 1. The Study is being modelled on the FEEDBACK ONSET, preceeding the stimuli presentation
+'' 2. The study is being modelled on STIMULUS ONSET
+''
+'' Whichever of the above is chosen has significant consequences for the analysis
+
+    '' Choose One NOW and set the TRUE/FALSE accordingly
+    bModelOnFeedback = False
+    bModelOnStimulus = True
+    
+    Call chkFileIsSuitable
+    
+    Call findLastDataRow
+    
+    Call correctWrongStimSelections
+    
+    Call assignRunNumber
+    Call assignStimNumber
+    Call labelConsecChoices
+    
+    Call assignPhase    ' to assign phases as acqusition or reversal phases'
+    Call assignCriterionEvents
+    Call assignAcqusitionEvent   '' NB a subroutine that this procedure calls is affected by whether data is modelled on FEEDBACK or STIMULUS onset
+    Call assignReversalEvent    '' NB also a subroutine that this procedure calls is affected by whether data is modelled on FEEDBACK or STIMULUS onset
+    
+    Call separateCritPhase  '' separate into critPos and critPrb events '' changes depending on modelling on FEEDBACK or STIMULUS
+    Call writeAllFeedbackEvents
+    Call writePrbErrCrit
+    
+    Call writeFeedbackTimes  '' make a column for the onset and duration of feedback presentation in units of TR
+    Call writeTwoThreeStimTimes
+    
+    Call clearErrorRows
+    Call clearLastRowSwitches
+    
+    Call makeEventsColumn
+    
+    Call countFacePres
+'    Call createEventTextFiles
+End Sub
+
+Private Sub chkFileIsSuitable()
+    If Left(Cells(1, 1), 7) <> "Subject" Then
+        MsgBox ("File already sorted? This macro will now quit")
+        End
+    End If
+    If bModelOnFeedback = bModelOnStimulus Then
+        MsgBox ("You must choose which way you are modelling, on feedback or stimulus onset. Change the boolean settings in Macro approriately")
+        End
+    End If
+End Sub
+
+Private Sub findLastDataRow()
+    ' if there are two blank spaces then assume it's at the end
+    Dim thisFirstCell As String
+    Dim nextFirstCell As String
+    For rowCount = startRowCount To maxRowCount
+        thisFirstCell = Cells(rowCount, dataColStimShown).Value
+        nextFirstCell = Cells(rowCount + 1, dataColStimShown).Value
+        
+        '' Last Data row in Run 1
+        If thisFirstCell = "" And Left(nextFirstCell, 5) = runChangeTest Then
+            lastRowFirstRun = rowCount - 1
+'            MsgBox ("Last Row First Run = " & lastRowFirstRun)
+        End If
+        ''  Last Data row in Run 2
+        If thisFirstCell = "" And nextFirstCell = "" And rowCount > 10 Then
+            lastRow = rowCount - 1
+'            MsgBox ("Last Data Row = " & lastRow)
+            Exit For
+        End If
+        
+    Next rowCount
+End Sub
+
+Private Sub correctWrongStimSelections()
+    For rowCount = startRowCount To maxRowCount
+        If Cells(rowCount, dataColTrialError) = True _
+                    And Cells(rowCount, dataColFeedbackPic) = feedNONE _
+                            Then Cells(rowCount, dataColStimChosen) = "X"
+    Next rowCount
+End Sub
+
+Private Sub clearErrorRows()
+    Dim columnCount As Integer
+    For rowCount = startRowCount To maxRowCount
+        If Cells(rowCount, dataColTrialError) = True And Cells(rowCount, dataColFeedbackPic) = feedNONE Then
+            For columnCount = outColFeedbackOnset To 50 ' arbitrary big number
+                Cells(rowCount, columnCount).Value = ""
+            Next columnCount
+        End If
+    Next rowCount
+End Sub
+
+Private Sub clearLastRowSwitches()
+    If bModelOnFeedback Then
+        Cells(lastRowFirstRun, outColEvents).Value = ""
+        Cells(lastRowFirstRun, outColFeedEvents).Value = ""
+        
+        Cells(lastRow, outColEvents).Value = ""
+        Cells(lastRow, outColFeedEvents).Value = ""
+    End If
+End Sub
+
+Private Sub assignRunNumber()
+    Dim firstCell As String
+    
+    whichRun = 1 'default is to start at run 1
+    For rowCount = startRowCount To maxRowCount
+        firstCell = Cells(rowCount, dataColStimShown).Value  'take the value in the first column
+        If Left(firstCell, 5) = runChangeTest Then whichRun = 2  'change the value of whichRun after encountering the run change
+        If (firstCell = "" Or Left(firstCell, 5) = runChangeTest) _
+                                Then Cells(rowCount, outColRun).Value = "" _
+                                Else Cells(rowCount, outColRun).Value = whichRun
+    Next rowCount
+End Sub
+
+Private Sub assignStimNumber()
+    Dim firstCell As String
+    Dim stimCount As Integer
+    Dim stimAvailable As String
+    Dim stimPresented As Variant
+    
+    For rowCount = startRowCount To maxRowCount
+        stimAvailable = "3stim" ' assume only 3 stim available to select
+        firstCell = Cells(rowCount, dataColStimShown).Value
+        If firstCell <> "" And Left(firstCell, 5) <> runChangeTest Then
+            stimPresented = Split(firstCell, "_") ' split the first cell into elements and then put them in an array
+            For stimCount = LBound(stimPresented) To UBound(stimPresented)
+                If Right(stimPresented(stimCount), 1) = "X" Then
+                    stimAvailable = "2stim"
+                    Exit For    ' exit this 'For' loop as soon as you know it's a 2stim (might save some time)
+                End If
+            Next stimCount
+            Cells(rowCount, outColStimNum).Value = stimAvailable    ' output to sheet
+        End If
+    Next rowCount
+End Sub
+
+Private Sub labelConsecChoices()
+    Dim testCellValue As String
+    Dim prevChoice As String
+    Dim currentChoice As String
+    Dim consecChoice As Integer
+    '' initialise variables
+    prevChoice = ""
+    currentChoice = "initial"
+    consecChoice = defaultSillyNumber ' silly number for the moment
+
+    For rowCount = startRowCount To maxRowCount
+        testCellValue = Cells(rowCount, dataColStimChosen).Value
+        If testCellValue <> "" Then
+            prevChoice = currentChoice  ' these two lines are just to update the values during the loop
+            currentChoice = testCellValue
+            If currentChoice = prevChoice Then
+                consecChoice = consecChoice + 1
+            Else
+                consecChoice = 1 ' reset consecutiveChoice counter
+            End If
+            Cells(rowCount, outColConsec).Value = consecChoice ' output to sheet
+        End If
+    Next rowCount
+    
+    '' NOTE about this subroutine (2010-03-04)
+    '' I don't think it matters which way around you define
+    '' the consecutive choices i.e whether compare against
+    '' the trial before or after.  The result should be the same
+    
+    
+End Sub
+
+Private Sub assignPhase()
+    Dim thisFirstCell As String
+    Dim lastFirstCell As String
+    Dim nextFirstCell As String
+    Dim sameStimuli As Boolean
+    
+    For rowCount = startRowCount To maxRowCount
+        thisFirstCell = Cells(rowCount, dataColStimShown).Value
+        If thisFirstCell = "" Then
+            lastFirstCell = Cells(rowCount - 1, dataColStimShown).Value
+            nextFirstCell = Cells(rowCount + 1, dataColStimShown).Value
+            sameStimuli = SameStimuliSet(lastFirstCell, nextFirstCell)
+            If sameStimuli And nextFirstCell <> "" Then
+                ' must either be in REVERSAL phase OR the subject has to REACQUIRE
+                If reAcqTrial(rowCount - 1) Then
+                    Cells(rowCount + 1, outColPhase).Value = eventAcqPhase 'label it as acqPhase
+                Else
+                    Cells(rowCount + 1, outColPhase).Value = eventReversalPhase 'label it as reversal phase
+                End If
+            ElseIf Not sameStimuli And nextFirstCell <> "" And Left(nextFirstCell, 5) <> runChangeTest Then
+                'must be in  a NEW ACQUSITION phase so label it as such
+                Cells(rowCount + 1, outColPhase).Value = eventAcqPhase
+                Cells(rowCount + 1, outColReversals).Value = eventNewSet 'since this happens to be the same thing
+            End If
+        End If
+    Next rowCount
+End Sub
+
+Private Sub assignCriterionEvents()
+'    Dim firstCell As String
+    Dim nextFirstCell As String
+    Dim trialCriterion As Integer
+    Dim subRowNumber As Integer
+    Dim consecChoices As Integer
+    Dim feedbackSeen As Integer
+    
+    For rowCount = startRowCount To maxRowCount
+        If Cells(rowCount, outColPhase).Value = eventAcqPhase Or Cells(rowCount, outColPhase).Value = eventReversalPhase Then
+            nextFirstCell = "initial" ' Cells(rowCount + 1, dataColStimShown).Value
+            trialCriterion = Cells(rowCount, dataColCriterion).Value
+            subRowNumber = rowCount
+            Do
+                nextFirstCell = Cells(subRowNumber + 1, dataColStimShown).Value
+                consecChoices = Cells(subRowNumber, outColConsec).Value
+                feedbackSeen = Cells(subRowNumber, dataColFeedback).Value
+                subRowNumber = subRowNumber + 1
+            Loop Until nextFirstCell = ""
+            If trialCriterion = consecChoices And (feedbackSeen = posFeedback Or feedbackSeen = prbFeedback) Then '' See comment at end of Sub
+                Call writeEventsCriterion((subRowNumber - 1), trialCriterion)
+            End If
+        End If
+    Next rowCount
+    
+    ''  Actually it's not allowed to be probablistic but this will be taken care of in
+    ''  a different part of the script.  Not very nice but at this point it doesn't matter.
+    ''  Nor do I really care. (2010-03-04)
+    
+    
+End Sub
+
+Private Sub writeEventsCriterion(finalRowNumber As Integer, criterionTrials As Integer)
+    Dim rowNumber As Integer
+    Dim firstRowNumber As Integer
+    
+    firstRowNumber = finalRowNumber - criterionTrials + 1
+    For rowNumber = firstRowNumber To finalRowNumber
+            Cells(rowNumber, outColCritPhase).Value = eventCritPhase
+    Next rowNumber
+    
+End Sub
+
+Private Sub separateCritPhase()
+'' this also needs editing depending on Modeling on FEEDBACK or STIMULUS
+'' For Stimulus model, need to take the onset/duration of stim immediately following
+'' presentation of feedback
+Dim nextCritCell As String
+
+    For rowCount = startRowCount To maxRowCount
+        If Left(Cells(rowCount, outColCritPhase).Value, 9) = eventCritPhase Then
+            nextCritCell = Cells(rowCount + 1, outColCritPhase).Value
+            If Cells(rowCount, dataColFeedback).Value = posFeedback Then
+                If bModelOnFeedback Then Cells(rowCount, outColCritPhase).Value = eventCritPhase & eventPosFeedback
+                If bModelOnStimulus And nextCritCell <> "" Then Cells(rowCount + 1, outColCritPhase).Value = eventCritPhase & eventPosFeedback
+            ElseIf Cells(rowCount, dataColFeedback).Value = prbFeedback Then
+                ' this bit will only keep critPrb trials according to certain criteria
+                If IsValidPrbEvent(rowCount) Then
+                    If bModelOnFeedback Then Cells(rowCount, outColCritPhase).Value = eventCritPhase & eventPrbFeedback
+                    If bModelOnStimulus And nextCritCell <> "" Then Cells(rowCount + 1, outColCritPhase).Value = eventCritPhase & eventPrbFeedback
+                Else
+                    Cells(rowCount, outColCritPhase).Value = eventUndefined
+                End If
+               
+'                ' this bit will only keep critPrb trials where subject DIDN'T switch after neg feedback
+'                If Not IsSwitchTrial(rowCount) Then
+'                    Cells(rowCount, outColCritPhase).Value = eventCritPhase & eventPrbFeedback
+'                Else
+'                    Cells(rowCount, outColCritPhase).Value = ""
+'                End If
+            
+            Else
+                MsgBox ("Problem in 'writeEventsCriterion' with Pos/Prb feedback on row = " & rowCount)
+                End
+            End If
+        End If
+    Next rowCount
+    
+    Call cleanseCritPhaseCol '' This is to remove any 'leftover' critPhase events that have not been assigned as critPhasePos or critPhasePrb
+    
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'    For rowCount = startRowCount To maxRowCount
+'        If Cells(rowCount, outColCritPhase).Value = eventCritPhase Then
+'            If Cells(rowCount, dataColFeedback).Value = posFeedback Then
+'                Cells(rowCount, outColCritPhase).Value = eventCritPhase & eventPosFeedback
+'            ElseIf Cells(rowCount, dataColFeedback).Value = prbFeedback Then
+'                ' this bit will only keep critPrb trials according to certain criteria
+'                If IsValidPrbEvent(rowCount) Then
+'                    Cells(rowCount, outColCritPhase).Value = eventCritPhase & eventPrbFeedback
+'                Else
+'                    Cells(rowCount, outColCritPhase).Value = ""
+'                End If
+'
+''                ' this bit will only keep critPrb trials where subject DIDN'T switch after neg feedback
+''                If Not IsSwitchTrial(rowCount) Then
+''                    Cells(rowCount, outColCritPhase).Value = eventCritPhase & eventPrbFeedback
+''                Else
+''                    Cells(rowCount, outColCritPhase).Value = ""
+''                End If
+'
+'            Else
+'                MsgBox ("Problem in 'writeEventsCriterion' with Pos/Prb feedback on row = " & rowCount)
+'                End
+'            End If
+'        End If
+'    Next rowCount
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    
+End Sub
+
+Private Sub cleanseCritPhaseCol()
+    For rowCount = startRowCount To maxRowCount
+        If Cells(rowCount, outColCritPhase).Value = eventCritPhase Then Cells(rowCount, outColCritPhase).Value = ""
+    Next rowCount
+End Sub
+
+Private Sub assignAcqusitionEvent()
+    Dim testCell As String
+    
+    For rowCount = startRowCount To maxRowCount
+        testCell = Cells(rowCount, outColPhase).Value
+        If testCell = eventAcqPhase Then Call writeEventsAcqusition(rowCount)
+    Next rowCount
+    
+    '' If we are modelling on Stimulus then once all the acqPhase trials
+    '' have been labelled, we need to shift them all down by one cell.
+    '' We can do this by inserting a cell at the top of the column
+    If bModelOnStimulus Then Cells(1, outColSwitch).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+    
+End Sub
+
+Private Sub writeEventsAcqusition(startRowNumber As Integer)
+'' Whether the data is being modelled on FEEDBACK or STIMULUS onset will alter the output of this procedure
+    Dim rowNumber As Integer
+    Dim firstCell As String
+    Dim nextCellCritPhase As String
+    Dim thisStimChosen As String
+    Dim nextStimChosen As String
+    'Dim feedbackType As String
+    
+    rowNumber = startRowNumber
+    firstCell = Cells(rowNumber, dataColStimShown).Value
+    nextCellCritPhase = Cells(rowNumber, outColCritPhase).Value ' just to start off with
+    Do While nextCellCritPhase <> eventCritPhase And firstCell <> ""
+        'feedbackType = whatFeedback(rowNumber)
+        ' we don't want to use probablisitc as an event so reset it to negative
+        'If feedbackType = eventPrbFeedback Then
+        '    feedbackType = eventNegFeedback
+        'End If
+        If IsSwitchTrial(rowNumber) Then
+            If bModelOnFeedback Then Cells(rowNumber, outColSwitch) = eventAcqSwitch '& feedbackType
+            'If bModelOnStimulus And Cells(rowNumber + 1, outColCritPhase) <> eventCritPhase Then Cells(rowNumber + 1, outColSwitch) = eventAcqSwitch
+            If bModelOnStimulus Then Cells(rowNumber, outColSwitch) = eventAcqSwitch
+        Else 'If Not IsSwitchTrial(rowNumber) Then
+            If bModelOnFeedback Then Cells(rowNumber, outColSwitch) = eventAcqStay '& feedbackType
+            'If bModelOnStimulus And Cells(rowNumber + 1, outColCritPhase) <> eventCritPhase Then Cells(rowNumber + 1, outColSwitch) = eventAcqStay
+            If bModelOnStimulus Then Cells(rowNumber, outColSwitch) = eventAcqStay
+        End If
+        
+'''''''''''''''''''''''''''''''
+''' can be deleted once tested
+'        If IsSwitchTrial(rowNumber) Then
+'            If bModelOnFeedback Then Cells(rowNumber, outColSwitch) = eventAcqSwitch '& feedbackType
+'            If bModelOnStimulus And Cells(rowNumber, outColReversals) <> eventNewSet Then Cells(rowNumber, outColSwitch) = eventAcqSwitch
+'        Else 'If Not IsSwitchTrial(rowNumber) Then
+'            If bModelOnFeedback Then Cells(rowNumber, outColSwitch) = eventAcqStay '& feedbackType
+'            If bModelOnStimulus And Cells(rowNumber, outColReversals) <> eventNewSet Then Cells(rowNumber, outColSwitch) = eventAcqStay
+'        End If
+'''''''''''''''''''''''''''''''
+        
+        ' update test variable here to define if loop needs to exit
+'        Cells(rowNumber, outColSwitch) = eventAcqPhase 'use this line if not wanting to define based on Switch/Stay criteria
+        nextCellCritPhase = Cells(rowNumber + 1, outColCritPhase).Value
+        firstCell = Cells(rowNumber + 1, dataColStimShown).Value
+        ' now increment rowNumber counter
+        rowNumber = rowNumber + 1
+    Loop
+        
+End Sub
+
+
+Private Sub assignReversalEvent()
+    Dim testCell As String
+    
+    For rowCount = startRowCount To maxRowCount
+        testCell = Cells(rowCount, outColPhase).Value
+        If testCell = eventReversalPhase Then Call writeEventsReversal(rowCount)
+    Next rowCount
+End Sub
+
+Private Sub writeEventsReversal(startRowNumber As Integer)
+'' This one is important to get right w.r.t modelling on FEEDBACK or STIMULUS ONSET
+    Dim rowNumber As Integer
+    Dim nextFirstCell As String
+    Dim thisStimChosen As String
+    Dim nextStimChosen As String
+    Dim reversalAchieved As Boolean
+
+    reversalAchieved = False
+    rowNumber = startRowNumber
+    nextFirstCell = Cells(rowNumber, dataColStimShown).Value 'ie the CURRENT row stimshown
+    Do While nextFirstCell <> "" And reversalAchieved = False
+        '' remember that by definition, subject must have reached a criterion phase before a reversal
+        thisStimChosen = Cells(rowNumber, dataColStimChosen).Value
+        nextStimChosen = Cells(rowNumber + 1, dataColStimChosen).Value
+        nextFirstCell = Cells(rowNumber + 1, dataColStimShown).Value
+        If thisStimChosen <> nextStimChosen Then
+            If nextFirstCell <> "" Then
+                If bModelOnFeedback Then Cells(rowNumber, outColReversals).Value = eventReversal 'i.e reversal is modelled on the immediately preceeding feedback
+                If bModelOnStimulus Then Cells(rowNumber + 1, outColReversals).Value = eventReversal 'i.e reversal is modelled on the presentation of Stim Onset
+                reversalAchieved = True
+            ElseIf nextFirstCell = "" Then
+                reversalAchieved = False
+            End If
+        End If
+        rowNumber = rowNumber + 1 ' increment rowNumber counter
+    Loop
+End Sub
+
+Private Sub writeAllFeedbackEvents()
+'' I'm making an assumption here that FEEDBACK should still be modelled on the onset and duration of the Feedback presentation
+'' I can't see any reason for it to be modelled on the subsequent presentation of of the Stimuli
+    Dim mkEventArray(0 To 2) As Variant
+    Dim feedbackShown As String
+    Dim feedbackValue As Integer
+    
+    For rowCount = startRowCount To maxRowCount
+        feedbackValue = Cells(rowCount, dataColFeedback).Value
+        feedbackShown = Cells(rowCount, dataColFeedbackPic).Value
+        If feedbackShown <> "" And feedbackShown <> feedNONE Then
+            If feedbackValue = posFeedback Then
+                Cells(rowCount, outColFeedEvents).Value = eventPosFeedback
+            ElseIf feedbackValue = negFeedback Then
+                Cells(rowCount, outColFeedEvents).Value = eventNegFeedback
+            ElseIf feedbackValue = prbFeedback Then
+                Cells(rowCount, outColFeedEvents).Value = eventNegFeedback 'eventPrbFeedback
+            End If
+            
+            ' This is just to help get stuff into one column on the spreadsheet
+            mkEventArray(0) = Cells(rowCount, outColCritPhase).Value
+            mkEventArray(1) = Cells(rowCount, outColSwitch).Value
+            mkEventArray(2) = Cells(rowCount, outColReversals).Value
+            If mkEventArray(0) = eventUndefined Then mkEventArray(0) = ""
+            If mkEventArray(2) = eventNewSet Then mkEventArray(2) = ""
+            Cells(rowCount, outColEvents).Value = Join(mkEventArray(), "")
+            
+            If Cells(rowCount, outColReversals).Value = eventNewSet Then
+                Cells(rowCount, outColNewSetSwitch).Value = Cells(rowCount, outColReversals).Value
+                Call prepend(rowCount, outColNewSetSwitch)
+            End If
+            
+            If Cells(rowCount, outColEvents).Value <> "" Then Call prepend(rowCount, outColEvents)
+            If Cells(rowCount, outColFeedEvents).Value <> "" Then Call prepend(rowCount, outColFeedEvents)
+       
+            If Cells(rowCount, outColStimNum).Value <> "" Then
+                Call prepend(rowCount, outColStimEvent)
+                ' not the best way of doing it but it works
+                Cells(rowCount, outColStimEvent).Value = Left(Cells(rowCount, outColStimEvent).Value, 8)
+            End If
+        End If
+        
+    Next rowCount
+    'Call appendSwitchOrNoSwitch
+End Sub
+
+Private Sub appendSwitchOrNoSwitch()
+    For rowCount = startRowCount To maxRowCount
+    If Cells(rowCount, outColFeedEvents).Value <> "" And rowCount <> lastRow Then
+        If IsSwitchTrial(rowCount) Then
+            Cells(rowCount, outColFeedEvents).Value = Cells(rowCount, outColFeedEvents).Value & addEventSwitch
+        Else
+            Cells(rowCount, outColFeedEvents).Value = Cells(rowCount, outColFeedEvents).Value & addEventStay
+        End If
+    End If
+    Next rowCount
+End Sub
+
+Private Sub writePrbErrCrit()
+    Dim feedbackType As Integer
+    Dim currStimChoice As String
+    Dim nextStimChoice As String
+    Dim currPhase As String
+    Dim currFeed As Integer
+
+    For rowCount = startRowCount To maxRowCount
+        feedbackType = Cells(rowCount, dataColFeedback).Value
+        currPhase = Cells(rowCount, outColCritPhase).Value
+
+        If Left(currPhase, 9) = eventCritPhase And feedbackType = prbFeedback Then
+            If Not IsSwitchTrial(rowCount) Then
+                Cells(rowCount, outColPrbErrCritEvent).Value = eventPrbErrCrit
+                Call prepend(rowCount, outColPrbErrCritEvent)
+            'Else
+            '    MsgBox ("Problem in 'writePrbErrCrit' with IsSwitchTrial at Row = " & rowCount)
+            End If
+        End If
+    Next rowCount
+End Sub
+
+Private Sub makeEventsColumn()
+    Dim firstCell As String
+    Dim phaseCol As String
+    Dim feedCol As String
+    
+    For rowCount = startRowCount To maxRowCount
+        firstCell = Cells(rowCount, dataColStimShown).Value
+        
+        If firstCell <> "" And Left(firstCell, 5) <> runChangeTest Then
+            phaseCol = Cells(rowCount, outColEvents).Value
+            feedCol = Cells(rowCount, outColFeedEvents).Value
+            
+            If phaseCol <> "" Then
+                Cells(rowCount, outColAllEvents).Value = phaseCol
+            ElseIf phaseCol = "" And bModelOnFeedback Then
+                Cells(rowCount, outColAllEvents).Value = feedCol
+            End If
+            
+        End If
+        
+    Next rowCount
+End Sub
+
+Private Sub writeFeedbackTimes()
+    For rowCount = startRowCount To maxRowCount
+        If Cells(rowCount, dataColFeedbackOn).Value <> "" Then
+            Cells(rowCount, outColFeedbackOnset).Value = (Cells(rowCount, dataColFeedbackOn).Value / scannerTR) - discardedScans
+            Cells(rowCount, outColFeedbackDuration).Value = Cells(rowCount, dataColFeedbackDur).Value / scannerTR
+        End If
+    Next rowCount
+End Sub
+
+Private Sub writeTwoThreeStimTimes()
+    Dim firstCell As String
+    
+    For rowCount = startRowCount To maxRowCount
+        firstCell = Cells(rowCount, dataColStimShown).Value
+        If firstCell <> "" And Left(firstCell, 5) <> runChangeTest Then
+            Cells(rowCount, outColStimOnset).Value = (Cells(rowCount, dataColStimOn).Value / scannerTR) - discardedScans
+            Cells(rowCount, outColStimDuration).Value = (Cells(rowCount, dataColRespTime).Value - Cells(rowCount, dataColStimOn).Value) / scannerTR
+        End If
+    Next rowCount
+End Sub
+
+Private Sub prepend(row As Integer, column As Integer)
+    Cells(row, column).Value = "r" & Cells(row, outColRun).Value & "_" _
+                                                  & Cells(row, outColStimNum).Value & "_" _
+                                                  & Cells(row, column).Value
+End Sub
+
+''
+''
+''  Functions
+''
+''
+
+Private Function whatFeedback(row As Integer)
+    Dim feedbackValue As Integer
+    feedbackValue = Cells(row, dataColFeedback).Value
+    If feedbackValue = posFeedback Then
+        whatFeedback = eventPosFeedback
+    ElseIf feedbackValue = negFeedback Then
+        whatFeedback = eventNegFeedback
+    ElseIf feedbackValue = prbFeedback Then
+        whatFeedback = eventPrbFeedback
+    End If
+End Function
+
+Private Function reAcqTrial(startRow As Integer) As Boolean ' chkForReAcqusition(startRow As Integer)
+'' this function looks at the structure of the file and if it matches that of a failed reversal
+'' then it labels it as a reAcquisition trial
+    Dim twoBackFirstCell As String
+    Dim lastFirstCell As String
+    Dim thisFirstCell As String
+    Dim nextFirstCell As String
+    Dim twoForwardFirstCell As String
+    
+    reAcqTrial = False ' default assumption
+    
+    ' the following rows are just here to make the function a bit easier to read
+    twoBackFirstCell = Cells(startRow - 2, dataColStimShown).Value
+    lastFirstCell = Cells(startRow - 1, dataColStimShown).Value
+    thisFirstCell = Cells(startRow, dataColStimShown).Value
+    nextFirstCell = Cells(startRow + 1, dataColStimShown).Value
+    twoForwardFirstCell = Cells(startRow + 2, dataColStimShown).Value
+    
+    'this is the bit that makes the decision based on structure
+    If SameStimuliSet(twoBackFirstCell, thisFirstCell) And SameStimuliSet(twoForwardFirstCell, thisFirstCell) _
+                    And (lastFirstCell = "" And nextFirstCell = "") Then reAcqTrial = True
+End Function
+
+Private Function SameStimuliSet(firstStimuliSet As String, secondStimuliSet As String) As Boolean
+    Dim stimCount As Integer
+    Dim stimSet_A As Variant
+    Dim stimSet_B As Variant
+    
+    SameStimuliSet = False ' assume default value of FALSE
+    stimSet_A = Split(firstStimuliSet, "_")
+    stimSet_B = Split(secondStimuliSet, "_")
+    ' if one of the stimuli is present in BOTH sets, then it must be the same set of stimuli overall
+    For stimCount = LBound(stimSet_B) To UBound(stimSet_B)
+        If stimSet_A(LBound(stimSet_A)) = stimSet_B(stimCount) Then
+            SameStimuliSet = True
+            Exit For
+        End If
+    Next stimCount
+End Function
+
+Private Function IsSwitchTrial(currentRow As Integer) As Boolean
+'' Whether or not something is a Switch trial depends on definition
+'' This is why it's important to know what you're modelling the data on...
+'' ... either FEEDBACK or STIMULUS onset
+    
+'' first try and reset to original script and see if that works
+    
+    Dim thisFirstCell As String
+    Dim nextFirstCell As String
+    Dim thisStimChoice As String
+    Dim nextStimChoice As String
+    
+    IsSwitchTrial = False 'default option
+    
+    thisFirstCell = Cells(currentRow, dataColStimShown).Value
+    thisStimChoice = Cells(currentRow, dataColStimChosen).Value
+    
+    If thisFirstCell = "" Or currentRow = lastRow Then Exit Function 'should not be in this function if there is no value in first cell
+    
+    nextFirstCell = Cells(currentRow + 1, dataColStimShown).Value
+    nextStimChoice = Cells(currentRow + 1, dataColStimChosen).Value
+    'if next cell is blank then skip to one more further down
+    If nextFirstCell = "" Then
+        nextFirstCell = Cells(currentRow + 2, dataColStimShown).Value
+        nextStimChoice = Cells(currentRow + 2, dataColStimChosen).Value
+        
+        If nextFirstCell = "" And currentRow <> lastRow Then
+            ' there shouldn't be 2 or more consecutive blanks rows in the sheet unless it's at the end
+            MsgBox ("too many consecutive blank rows from row number " & currentRow)
+            End
+        End If
+    End If
+    
+    If thisFirstCell <> "" And nextFirstCell <> "" Then 'just checking
+        If nextStimChoice = thisStimChoice And currentRow < lastRow Then
+            IsSwitchTrial = False ' ie same choice is made
+        ElseIf nextStimChoice <> thisStimChoice And currentRow < lastRow Then
+            IsSwitchTrial = True ' ie different choice is made
+        End If
+    Else
+        MsgBox ("Err in 'IsSwitchTrial' in second If-Block at row = " & currentRow)
+        End
+    End If
+    
+    
+    
+    
+    
+    
+'    Dim thisFirstCell As String
+''    Dim nextFirstCell As String
+'    Dim comparisonFirstCell As String
+'    Dim thisStimChoice As String
+''    Dim nextStimChoice As String
+'    Dim comparisonStimChoice As String
+'    Dim intDirectionToCompare As Integer
+'
+'    IsSwitchTrial = False 'default option
+'
+'    thisFirstCell = Cells(currentRow, dataColStimShown).Value
+'    thisStimChoice = Cells(currentRow, dataColStimChosen).Value
+'
+'    If bModelOnFeedback Then
+'        If thisFirstCell = "" Or currentRow = lastRow Then Exit Function 'should not be in this function if there is no value in first cell
+'    End If
+'    If bModelOnStimulus Then
+'            If thisFirstCell = "" Or Cells(currentRow, outColReversals).Value = eventNewSet Then Exit Function 'should not be in this function if there is no value in first cell
+'    End If
+'
+'
+''    If bModelOnFeedback Then
+''        comparisonFirstCell = Cells(currentRow + 1, dataColStimShown).Value
+''        comparisonStimChoice = Cells(currentRow + 1, dataColStimShown).Value
+''
+''        'if comparison cell is blank then skip to one more further away (either before or after)
+''        If comparisonFirstCell = "" Then
+''            comparisonFirstCell = Cells(currentRow + 2, dataColStimShown).Value
+''            comparisonStimChoice = Cells(currentRow + 2, dataColStimChosen).Value
+''
+''        If comparisonFirstCell = "" And currentRow <> lastRow Then
+''            ' there shouldn't be 2 or more consecutive blanks rows in the sheet unless it's at the end
+''            MsgBox ("too many consecutive blank rows from row number " & currentRow)
+''            End
+''        End If
+''
+''    End If
+'
+'    If bModelOnStimulus Then intDirectionToCompare = -1 Else intDirectionToCompare = 1
+'
+'    comparisonFirstCell = Cells(currentRow + intDirectionToCompare, dataColStimShown).Value
+'    comparisonStimChoice = Cells(currentRow + intDirectionToCompare, dataColStimShown).Value
+'
+'    'if comparison cell is blank then skip to one more further away (either before or after)
+'    If comparisonFirstCell = "" Then
+'        comparisonFirstCell = Cells(currentRow + (2 * intDirectionToCompare), dataColStimShown).Value
+'        comparisonStimChoice = Cells(currentRow + (2 * intDirectionToCompare), dataColStimChosen).Value
+'        'check that nothing strange has happened
+'        If comparisonFirstCell = "" And currentRow <> lastRow Then
+'            ' there shouldn't be 2 or more consecutive blanks rows in the sheet unless it's at the end
+'            MsgBox ("IsSwitchTrial: too many consecutive blank rows before/after row number " & currentRow)
+'            End
+'        End If
+'    End If
+'
+'    '' Compare the two trials, whether it the one after (modelled on feedback) or the one before (modelled on stimulus)
+'    If thisFirstCell <> "" And comparisonFirstCell <> "" Then 'just checking
+'        If comparisonStimChoice = thisStimChoice Then
+'            IsSwitchTrial = False ' ie same choice is made
+'        ElseIf comparisonStimChoice <> thisStimChoice Then
+'            IsSwitchTrial = True ' ie different choice is made
+'        End If
+'    Else
+'        MsgBox ("Err in 'IsSwitchTrial' in second If-Block at row = " & currentRow)
+'        End
+'    End If
+
+End Function
+
+
+Private Function IsValidPrbEvent(prbErrRowNumber As Integer) As Boolean
+' this function should check if the Probablistic error on the row is valid or not
+' This is defined by the structure of the data
+    Dim thisFeedback As Integer
+    Dim prevFeedback As Integer
+    Dim nextFeedback As Integer
+    
+    IsValidPrbEvent = True 'default answer
+    
+    prevFeedback = Cells(prbErrRowNumber - 1, dataColFeedback).Value
+    thisFeedback = Cells(prbErrRowNumber, dataColFeedback).Value
+    nextFeedback = Cells(prbErrRowNumber + 1, dataColFeedback).Value
+    
+    If thisFeedback <> prbFeedback Then MsgBox ("Function IsValidPrbEvent triggered but on a row that doesn't have Prb Err!")
+    
+    If prevFeedback = posFeedback And nextFeedback = posFeedback Then
+        IsValidPrbEvent = True
+    Else
+        ' any other data structure is rejected
+        IsValidPrbEvent = False
+    End If
+End Function

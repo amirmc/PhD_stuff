@@ -1,0 +1,71 @@
+Option Explicit
+
+
+Function bCheckFolderExists(strPath As String) As Boolean
+    On Error Resume Next
+    Err.Clear
+    ChDir strPath
+    If Err.Number = 0 Then bCheckFolderExists = True
+End Function
+
+''
+''
+''  The following functions ('Split' and 'Join') are normally built into VBA on Windows
+''  but they're NOT included in VBA on the Mac.  Therefore they should be left intact
+''  and this script should work on either platform.
+''
+''  They were copy-pasted from http://www.windowsdevcenter.com/pub/a/windows/2004/11/16/wdhks_2.html?page=2
+''
+''  Amir MC (amc79) 18-May-2006
+''
+''
+
+Function Split(ByVal strIn As String, Optional ByVal strDelim As String = " ", Optional ByVal lCount As Long = -1) As Variant
+    Dim vOut() As Variant
+    Dim strSubString As String
+    Dim k As Integer
+    Dim lDelimPos As Long
+
+    k = 0
+    lDelimPos = InStr(strIn, strDelim)
+
+    Do While (lDelimPos)
+        ' Get everything to the left of the delimiter
+        strSubString = Left(strIn, lDelimPos - 1)
+        ' Make the return array one element larger
+        ReDim Preserve vOut(k)
+        ' Add the new element
+        vOut(k) = strSubString
+        k = k + 1
+        If lCount <> -1 And k = lCount Then
+            Split = vOut
+            Exit Function
+        End If
+        ' Only interested in what's right of delimiter
+        strIn = Right(strIn, (Len(strIn) - (lDelimPos + Len(strDelim) - 1)))
+        ' See if delimiter occurs again
+        lDelimPos = InStr(strIn, strDelim)
+    Loop
+
+    ' No more delimiters in string.
+    ' Add what's left as last element
+    ReDim Preserve vOut(k)
+    vOut(k) = strIn
+
+    Split = vOut
+End Function
+
+Function Join(ByVal vIn As Variant, Optional ByVal strDelim As String = " ") As String
+    Dim strOut As String
+    Dim k As Long
+    Dim lUpperBound As Long
+
+    lUpperBound = UBound(vIn)
+    For k = LBound(vIn) To (lUpperBound - 1)
+        strOut = strOut & vIn(k) & strDelim
+    Next k
+
+    ' Don't want to add delimiter after last element
+    strOut = strOut & vIn(lUpperBound)
+    Join = strOut
+End Function

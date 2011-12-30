@@ -1,0 +1,873 @@
+Option Explicit
+
+'' Macro to calculate the numbers of trials to criteron for each phase for each subject
+
+Private Const intStartRowCount = 4
+Private Const intMaxRowCount = 600
+
+Private Const strRunChangeTest = "Run 2"
+Private Const strFeedNONE = "NONE"
+Private Const intFeedPos = 1
+Private Const intFeedPrb = -1
+Private Const intFeedNeg = 0
+Private Const str2Stim = "2stim"
+Private Const str3Stim = "3stim"
+Private Const behavDataSheet = "BehavData"
+Private Const finalDataSheet = "FinalData"
+' event names
+Private Const strEventNewSet = "NewSet"
+Private Const strEventAcqSwitch = "acqSwitch"
+Private Const strEventAcqStay = "acqStay"
+Private Const strEventCritPhasePos = "critPhasePos"
+Private Const strEventCritPhasePrb = "critPhasePrb"
+Private Const strEventRevPhaseNegNS = "RevPhaseNegNS"
+Private Const strEventReversal = "Reversal"
+Private Const strPhaseRev = "RevPhase"
+Private Const strFirstRun = "r1"
+Private Const strSecondRun = "r2"
+Private Const strEventPos = "_Pos"
+Private Const strEventNeg = "_Neg"
+
+Public Const iRowOffset = 10
+
+Private Const intColStimSelection = 4 ' column D on sheet
+Private Const intColFeedbackType = 5 ' column E on sheet
+Private Const intColCriterionCount = 7 ' column G on sheet
+Private Const intColStimOn = 10 ' column J on sheet
+Private Const intColRespTime = 11 ' column K on sheet
+Private Const intColNumTRs = 14 ' column N on sheet
+Private Const intColRunNumber = 16 ' column P on sheet
+Private Const intColStimNumber = 17 ' column Q on sheet
+Private Const intColConsecChoices = 18 ' column R on sheet
+Private Const intColBlockPhase = 19 ' column S on sheet
+Private Const intColCritPhase = 20 ' column T on sheet
+Private Const intColSwitch = 21 ' column U on sheet
+Private Const intColReversals = 22 ' column V on sheet
+Private Const intColNewSetSwitch = 23 ' column W on sheet
+
+Private Const intColStimEvent = 28 ' column AB on sheet
+Private Const intColOrigEvents = 30 ' column AD on sheet
+Private Const intColFacePresCount = 31 ' column AE on sheet
+Private Const intColFinalEvents = 32 ' column AF on sheet
+Private Const intColFeedRateEvents = 33 ' column AG on sheet
+
+Private Const intOutColNewSetCounts = 4 'column D on sheet(behavDataSheet)
+Private Const intOutColRevCounts = 5 'column E on sheet(behavDataSheet)
+Private Const intOutColFalseRevs = 6 'column F on sheet(behavDataSheet)
+Private Const intOutColIncomplete = 7 'column G on sheet(behavDataSheet)
+Private Const intOutColFailRev = 8 'column H on sheet(behavDataSheet)
+Private Const intOutColNearMiss = 9 'column I on sheet(behavDataSheet)
+Private Const intOutColAveLatency = 10 'column J on sheet(behavDataSheet)
+
+Private Const intOutRow_r1_2stim = 2
+Private Const intOutRow_r1_3stim = 3
+Private Const intOutRow_r2_2stim = 4
+Private Const intOutRow_r2_3stim = 5
+
+Private bModelOnFeedback As Boolean
+Private bModelOnStimulus As Boolean
+
+
+Public Sub countTrials()
+    bModelOnFeedback = False
+    bModelOnStimulus = True
+    
+    Call clearCellContents
+    Call makeHeaderRows
+    Call zeroOuputCells
+    Call countRevNewSetTrials
+    Call countTrialsToCriterion
+    Call fillEventsColumn
+    Call fillFeedRatingColumn
+    'Sheets(behavDataSheet).Select
+    'Call copyToBehavResultsBook
+End Sub
+
+Private Sub countRevNewSetTrials()
+    Dim iRowCount As Integer
+    Dim strColRevOrNewSet As String
+    Dim strTaskPhase As String
+    
+    For iRowCount = intStartRowCount To intMaxRowCount
+        strColRevOrNewSet = Cells(iRowCount, intColReversals).Value
+        strTaskPhase = Cells(iRowCount, intColBlockPhase).Value
+        If strColRevOrNewSet = strEventReversal Or strColRevOrNewSet = strEventNewSet Then
+            Call uponRevOrNewSetTrial(iRowCount, strColRevOrNewSet)
+        End If
+        If strTaskPhase = strPhaseRev Then
+            ' do stuff if it's a near miss trial
+            Call checkForNearMissTrial(iRowCount)
+        End If
+    Next iRowCount
+End Sub
+
+Private Sub uponRevOrNewSetTrial(iRow As Integer, strEventType As String)
+    Dim iOutRow As Integer
+    Dim iOutCol As Integer
+    Dim b_ProperReversal As Boolean
+    Dim b_FalseReversal As Boolean
+    'need to increment the value on the 'BehavData' sheet
+    'depending on what trial type it is
+    
+    iOutRow = whichRowToOutput(iRow)
+    'to ascertain if it's a reversal or a NewSet
+    'and define which column to add data to
+    If strEventType = strEventReversal Then
+        'decide which output column results should be counted in
+        'options are: RevCounts, FalseRevs, Incomplete
+        iOutCol = calcTypeOfReversal(iRow)
+    ElseIf strEventType = strEventNewSet Then
+        'must know if it's a 'complete' set of newset trials or not
+        'options are: NewSetCounts, Incomplete
+        '
+        'actually it needs to increment BOTH since an unfinished 'reversal' block
+        'is also counted as an 'Incomplete' block. therefore must increment BOTH
+        'incomplete AND totalSets
+        iOutCol = calcTypeOfNewSet(iRow)
+        If iOutCol <> intOutColNewSetCounts Then Call incrementCellCount(iOutRow, intOutColNewSetCounts)
+    End If
+    
+    ' having calculated which event type it is and where to place the output, increment the appropriate cell
+    Call incrementCellCount(iOutRow, iOutCol)
+    'since we're already programming, might as well do the calculation for 'incomplete reversals here too
+    Call calcFailRevs(iOutRow)
+    
+    'if this is a reversal proper, then write the event out
+    If iOutCol = intOutColRevCounts Then
+        Cells(iRow, intColFinalEvents).Value = Cells(iRow, intColOrigEvents).Value
+    End If
+End Sub
+
+Private Sub checkForNearMissTrial(iRow As Integer)
+    Dim strLastFirstCell As String
+    Dim strThisFirstCell As String
+    Dim strNextFirstCell As String
+    
+    strLastFirstCell = Cells(iRow - 1, 1).Value
+    strThisFirstCell = Cells(iRow, 1).Value
+    strNextFirstCell = Cells(iRow + 1, 1).Value
+    If strLastFirstCell = vbNullString And strNextFirstCell = vbNullString And strThisFirstCell <> vbNullString Then
+        'this must be a 'nearMiss trial so incrementNearMissTrial
+        Call incrementCellCount(whichRowToOutput(iRow), intOutColNearMiss)
+        Call writeNearMissEvents(iRow)
+    End If
+End Sub
+
+Private Sub writeNearMissEvents(rowOfNearMiss As Integer)
+    ' by definition, these near miss events are part of the acqPhase
+    ' the one before is necessarily a switch (otherwise it'd be a proper reversal)
+    ' so the only one we need to calculate is the current trial
+    
+    ' the above is not nesessarily true since we're now modelling on Stimulus too
+    
+    Dim strThisStimSelection As String
+    Dim strNextStimSelection As String
+    Dim strEventPreamble As String
+    Dim strEventToWrite As String
+    
+    
+    '' The following also needs to change since the outcome depends on modeling on Feedback or Stimulus
+
+        
+    ' now write for current trials
+    strThisStimSelection = Cells(rowOfNearMiss, intColStimSelection).Value
+    strNextStimSelection = Cells(rowOfNearMiss + 2, intColStimSelection).Value
+    strEventPreamble = "r" & Cells(rowOfNearMiss, intColRunNumber).Value & "_" _
+                                        & Cells(rowOfNearMiss, intColStimNumber).Value & "_"
+    If strNextStimSelection = strThisStimSelection Then
+        ' is an acqStay trial
+        strEventToWrite = strEventPreamble & strEventAcqStay
+    ElseIf strNextStimSelection <> strThisStimSelection Then
+        'is an acqSwitch trial
+        strEventToWrite = strEventPreamble & strEventAcqSwitch
+    Else
+        MsgBox ("Error in writeNearMissEvents If-Then block... I quit now")
+        End
+    End If
+    
+    If bModelOnFeedback Then
+    ' If we're modeling on Feedback then the previous row should be marked as AcqSwitch
+        Cells(rowOfNearMiss - 2, intColFinalEvents).Value = "r" & Cells(rowOfNearMiss - 2, intColRunNumber).Value & "_" _
+                                                                                       & Cells(rowOfNearMiss - 2, intColStimNumber).Value & "_" _
+                                                                                       & strEventAcqSwitch
+        Cells(rowOfNearMiss, intColFinalEvents).Value = strEventToWrite
+    End If
+    If bModelOnStimulus Then
+    ' If we're modeling on Stimulus then this row is the one that should be marked as AcqSwitch
+        Cells(rowOfNearMiss, intColFinalEvents).Value = "r" & Cells(rowOfNearMiss - 2, intColRunNumber).Value & "_" _
+                                                                                       & Cells(rowOfNearMiss - 2, intColStimNumber).Value & "_" _
+                                                                                       & strEventAcqSwitch
+        Cells(rowOfNearMiss + 2, intColFinalEvents).Value = strEventToWrite
+    End If
+    
+End Sub
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' the bit that counts trials to criterion
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Private Sub countTrialsToCriterion()
+'' want to find a reversal and then count backwards to the NewSet.
+'' Can then count back again to the critPhase
+
+    Dim intNewSetRow As Integer
+    Dim intCritPhaseRow As Integer
+    Dim intRevPhaseRow As Integer
+    Dim iRowIncrement As Integer
+    Dim intReversalRow As Integer
+    Dim intEndOfRevBlock As Integer
+    Dim iRowCount As Integer
+    Dim strColRevOrNewSet As String
+    
+    Dim intNumRowsToNewSet As Integer
+    Dim intNumBlanksToNewSet As Integer
+    Dim intNumRowsToRevPhase As Integer
+    Dim intNumBlanksToRevPhase As Integer
+    Dim intNumRowsOfCritPhase As Integer
+    Dim intNumErrToCritPhase As Integer
+    Dim intNumErrToReversal As Integer
+    Dim intNumBlanksFromNewToCrit As Integer
+    Dim intTrialsToCriterion As Integer
+    Dim dblTimeToReversal As Double
+    Dim dblTimeToCriterion As Double
+    Dim dblTimeInCritPhase As Double
+    Dim dblTimeInPreReversal As Double
+    Dim dblAveResponseLatency As Double
+    
+    iRowIncrement = 0
+    
+    For iRowCount = intStartRowCount To intMaxRowCount
+        strColRevOrNewSet = Cells(iRowCount, intColReversals).Value
+        If strColRevOrNewSet = strEventReversal Then
+            intReversalRow = iRowCount
+            iRowIncrement = iRowIncrement + 1
+'            Call printOutBasicInfo(intReversalRow, iRowIncrement)
+            ' this set is to calculate number of trials from Reversal to previous NewSet
+            intNumRowsToNewSet = countNumRowsToPrev(intReversalRow, intColReversals, strEventNewSet)
+            intNewSetRow = intReversalRow - intNumRowsToNewSet
+            intNumBlanksToNewSet = countNumBlankRows(intReversalRow, intNewSetRow)
+            intEndOfRevBlock = findLastRowOfBlock(intReversalRow)
+            
+            intNumRowsToRevPhase = countNumRowsToPrev(intReversalRow, intColBlockPhase, strPhaseRev)
+            intRevPhaseRow = intReversalRow - intNumRowsToRevPhase
+            
+            intNumBlanksToRevPhase = countNumBlankRows(intReversalRow, intRevPhaseRow)
+            intNumBlanksFromNewToCrit = countNumBlankRows(intRevPhaseRow, intNewSetRow) - 1
+           
+            'now have to do it from the revPhase back to the end of the last critPhase
+            intNumRowsOfCritPhase = Cells((intRevPhaseRow - 2), intColCriterionCount).Value
+                        
+            'now calclate the number of trials to criterion
+            intTrialsToCriterion = (intNumRowsToNewSet - intNumBlanksToNewSet) _
+                                            - (intNumRowsToRevPhase - intNumBlanksToRevPhase) _
+                                            - intNumRowsOfCritPhase
+            ''''
+            intCritPhaseRow = intNewSetRow + intTrialsToCriterion + intNumBlanksFromNewToCrit
+            
+            intNumErrToCritPhase = countNumErrs(intCritPhaseRow, intNewSetRow)
+            intNumErrToReversal = countNumErrs(intReversalRow, intRevPhaseRow)
+            
+            'now calculate all those times you wanted
+            dblAveResponseLatency = calcAveLatencyByBlock(intNewSetRow, intEndOfRevBlock)
+            dblTimeToReversal = Cells(intReversalRow, intColNumTRs).Value - Cells(intNewSetRow, intColNumTRs).Value
+            dblTimeToCriterion = Cells(intCritPhaseRow, intColNumTRs).Value - Cells(intNewSetRow, intColNumTRs).Value
+            dblTimeInPreReversal = Cells(intReversalRow, intColNumTRs).Value - Cells(intRevPhaseRow, intColNumTRs).Value
+            dblTimeInCritPhase = Cells(intRevPhaseRow, intColNumTRs).Value - Cells(intCritPhaseRow, intColNumTRs).Value
+            ' now print all the stuff to the spreadsheet
+            Call printOutBasicInfo(intReversalRow, iRowIncrement)
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 7).Value = intTrialsToCriterion
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 8).Value = intNumErrToCritPhase
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 9).Value = intNumRowsToNewSet - intNumBlanksToNewSet
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 10).Value = intNumErrToReversal
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 11).Value = dblAveResponseLatency
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 12).Value = intNumRowsOfCritPhase
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 13).Value = intNumRowsToNewSet
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 14).Value = intNumBlanksToNewSet
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 15).Value = intNumBlanksFromNewToCrit
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 16).Value = intNumRowsToRevPhase
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 17).Value = intNumBlanksToRevPhase
+            
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 18).Value = dblTimeToReversal
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 19).Value = dblTimeToCriterion
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 20).Value = dblTimeInPreReversal
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 21).Value = dblTimeInCritPhase
+            Sheets(behavDataSheet).Cells(iRowOffset + iRowIncrement, 22).Value = dblTimeToReversal - dblTimeToCriterion - dblTimeInCritPhase - dblTimeInPreReversal
+        
+            Call calcAveLatencyByEventType(intNewSetRow, intEndOfRevBlock, intReversalRow)
+        
+        End If
+    Next iRowCount
+End Sub
+
+Private Sub printOutBasicInfo(iRevRow As Integer, iCurrentStep As Integer)
+    Dim bTrueReversal As Boolean
+    
+    If Cells(iRevRow, intColFinalEvents).Value = Cells(iRevRow, intColOrigEvents).Value Then
+        bTrueReversal = True
+    Else
+        bTrueReversal = False
+    End If
+    With Sheets(behavDataSheet)
+        .Cells(iRowOffset + iCurrentStep, 1).Value = "W" & Left(ActiveWorkbook.Name, 6)
+        .Cells(iRowOffset + iCurrentStep, 2).Value = "r" & Cells(iRevRow, intColRunNumber).Value
+        .Cells(iRowOffset + iCurrentStep, 3).Value = iCurrentStep
+        .Cells(iRowOffset + iCurrentStep, 4).Value = Left(Cells(iRevRow, 1).Value, 3)
+        .Cells(iRowOffset + iCurrentStep, 5).Value = Cells(iRevRow, intColStimNumber)
+        .Cells(iRowOffset + iCurrentStep, 6).Value = bTrueReversal
+    End With
+End Sub
+
+Private Sub fillEventsColumn()
+    Dim iRowCount As Integer
+    Dim strFinalEventToCheck As String
+    
+    For iRowCount = intStartRowCount To intMaxRowCount
+        strFinalEventToCheck = Cells(iRowCount, intColFinalEvents).Value
+        If Right(strFinalEventToCheck, 8) = strEventReversal Then
+            'fill in cells above
+            ' need to differentiate between proper crit trials and all the rest
+            Call fillCritEventsForThisReversalSet(iRowCount)
+            Call fillOtherEventsForThisReversalSet(iRowCount)
+            
+            '' In here also need to add Adam's other things from email of 19 Apr 2010 (to amc79)
+            Call fillRevPhaseNegNS(iRowCount)
+            
+        End If
+        '' also copy NewSet Event to events column (amc - 19 June 2010)
+        If Cells(iRowCount, intColNewSetSwitch).Value <> vbNullString Then _
+                        Cells(iRowCount, intColFinalEvents).Value = Cells(iRowCount, intColNewSetSwitch).Value
+    Next iRowCount
+    
+End Sub
+
+Private Sub fillCritEventsForThisReversalSet(iRowOfReversal As Integer)
+    'only fill in the crit trials
+    Dim iRowStep As Integer
+    Dim iCurrentRow As Integer
+    Dim strTestForCritPhase As String
+    Dim strOriginalEvent As String
+    Dim lastRowOfPrevBlock As Integer
+    Dim lastRowOfThisBlock As Integer
+    Dim iFirstRowOfRevBlock As Integer
+    
+    
+    iRowStep = 0
+    iFirstRowOfRevBlock = findFirstRowOfBlock(iRowOfReversal)
+    lastRowOfPrevBlock = iFirstRowOfRevBlock - 2      'first need to find the end of preceeding crit phase
+    iCurrentRow = lastRowOfPrevBlock + iRowStep
+    strTestForCritPhase = Cells(iCurrentRow, intColCritPhase).Value
+    Do Until strTestForCritPhase = vbNullString
+        Cells(iCurrentRow, intColFinalEvents).Value = Cells(iCurrentRow, intColOrigEvents).Value
+        iRowStep = iRowStep - 1
+        iCurrentRow = lastRowOfPrevBlock + iRowStep
+        strTestForCritPhase = Cells(iCurrentRow, intColCritPhase).Value
+        Call preventRunawayLoops("fillCritEventsForThisReversalSet", lastRowOfPrevBlock, iRowStep)
+    Loop
+    
+    '' First row of RevPhase Block is critPhasePos by definition (if modelling on stimulus)
+    If bModelOnStimulus Then
+        Cells(iFirstRowOfRevBlock, intColFinalEvents).Value = Cells(iFirstRowOfRevBlock, intColStimEvent) & "_" & strEventCritPhasePos
+    End If
+    
+    ''
+    '' Somewhere, also need to include the other Criterion Phases from the Reversal Phase
+    '' Specifically the PrbCrit trials
+    ''
+    
+    iRowStep = 0
+    lastRowOfThisBlock = findLastRowOfBlock(iRowOfReversal)      'first need to find the end of subsequent crit phase
+    iCurrentRow = lastRowOfThisBlock + iRowStep
+    strTestForCritPhase = Cells(iCurrentRow, intColCritPhase).Value
+    Do Until strTestForCritPhase = vbNullString
+        Cells(iCurrentRow, intColFinalEvents).Value = Cells(iCurrentRow, intColOrigEvents).Value
+        iRowStep = iRowStep - 1
+        iCurrentRow = lastRowOfThisBlock + iRowStep
+        strTestForCritPhase = Cells(iCurrentRow, intColCritPhase).Value
+        Call preventRunawayLoops("fillCritEventsForThisReversalSet", lastRowOfPrevBlock, iRowStep)
+    Loop
+    
+    
+End Sub
+
+Private Sub fillOtherEventsForThisReversalSet(iRowOfReversal As Integer)
+    'don't fill in cells that are not blank
+    ' if it's a critRow then needs to be replaced with acqStay
+    Dim iRowStep As Integer
+    Dim iCurrentRow As Integer
+    Dim strTestForNewSetEvent As String
+    Dim strCritPhase As String
+    Dim strAcqPhase As String
+
+'    Dim strOriginalEvent As String
+    
+    iRowStep = 0
+    iCurrentRow = iRowOfReversal + iRowStep
+    Do 'Until strTestForNewSetEvent = strEventNewSet
+        strTestForNewSetEvent = Cells(iCurrentRow, intColReversals).Value
+        If Cells(iCurrentRow, intColFinalEvents).Value = vbNullString Then
+            strCritPhase = Cells(iCurrentRow, intColCritPhase).Value
+            strAcqPhase = Cells(iCurrentRow, intColSwitch).Value
+            If strCritPhase <> vbNullString Or strAcqPhase <> vbNullString Then
+                'copy cell across unless it's a critPhase trial
+                Cells(iCurrentRow, intColFinalEvents).Value = calcWhatEventToWrite(iCurrentRow)
+            End If
+            
+        End If
+        iRowStep = iRowStep - 1
+        iCurrentRow = iRowOfReversal + iRowStep
+        Call preventRunawayLoops("fillOtherEventsForThisReversalSet", iRowOfReversal, iRowStep)
+    Loop Until strTestForNewSetEvent = strEventNewSet
+    
+End Sub
+
+Private Sub fillRevPhaseNegNS(iRowOfReversal As Integer)
+    '' in this sub, must fill in specific events between reversal and preceeding
+    '' critPhasePos events
+    
+    Dim iRowStep As Integer
+    Dim iCurrentRow As Integer
+    
+    '' since this row is reversal row, must start on preceeding row
+    iRowStep = -1
+    iCurrentRow = iRowOfReversal + iRowStep
+    Do Until Cells(iCurrentRow, intColFinalEvents).Value <> vbNullString
+        Cells(iCurrentRow, intColFinalEvents).Value = Cells(iCurrentRow, intColStimEvent) & "_" & strEventRevPhaseNegNS
+        iRowStep = iRowStep - 1
+        iCurrentRow = iRowOfReversal + iRowStep
+        Call preventRunawayLoops("fillRevPhaseNegNS", iRowOfReversal, iRowStep)
+    Loop
+        
+End Sub
+
+Private Sub fillFeedRatingColumn()
+    'need to populate the final column for feedback ratings
+    Dim iRowSteps As Integer
+    Dim intThisRunNumber As Integer
+    Dim intThisFacePresCount As Integer
+    Dim strThisFirstCell As String
+    Dim strThisFeedBackPic As String
+    Dim strFeedEventToWrite As String
+    
+    Worksheets(finalDataSheet).Activate
+    For iRowSteps = intStartRowCount To intMaxRowCount
+        strThisFirstCell = Cells(iRowSteps, 1).Value
+        strThisFeedBackPic = Cells(iRowSteps, 3).Value
+        If strThisFirstCell <> vbNullString And Left(strThisFirstCell, 5) <> strRunChangeTest And strThisFeedBackPic <> strFeedNONE Then
+            ' create the event for the feedback trials
+            intThisRunNumber = Cells(iRowSteps, intColRunNumber).Value
+            intThisFacePresCount = Cells(iRowSteps, intColFacePresCount).Value
+            strFeedEventToWrite = "r" & intThisRunNumber & "_" & intThisFacePresCount & "pres"
+            Cells(iRowSteps, intColFeedRateEvents).Value = strFeedEventToWrite
+        End If
+    Next iRowSteps
+End Sub
+
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''  Misc bits
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Private Sub calcFailRevs(iRowNumber As Integer)
+' actually I'm not convinced this works for all cases
+    With Sheets(behavDataSheet)
+        .Cells(iRowNumber, intOutColFailRev).Value = _
+                                        .Cells(iRowNumber, intOutColNewSetCounts).Value - _
+                                        .Cells(iRowNumber, intOutColRevCounts).Value - _
+                                        .Cells(iRowNumber, intOutColFalseRevs).Value - _
+                                        .Cells(iRowNumber, intOutColIncomplete).Value
+    End With
+End Sub
+
+Private Sub clearCellContents()
+    Worksheets(behavDataSheet).Activate
+    Cells.Select
+    Selection.ClearContents
+    Worksheets("FinalData").Activate
+    Columns("AF:AG").ClearContents
+End Sub
+
+Private Sub zeroOuputCells()
+    Dim iRowCount As Integer
+    Dim iColCount As Integer
+    For iColCount = 4 To 9
+        For iRowCount = 2 To 5
+            Sheets(behavDataSheet).Cells(iRowCount, iColCount).Value = 0
+        Next iRowCount
+    Next iColCount
+End Sub
+
+Private Sub makeHeaderRows()
+    Dim iRowCount As Integer
+    
+    'On Error GoTo ErrChecking:
+    With Sheets(behavDataSheet)
+    '    Exit Sub
+        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+        '' For the Reversal Results
+        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+        .Cells(1, 1).Value = "Subject"
+        .Cells(1, 2).Value = "Run"
+        .Cells(1, 3).Value = "stimNum"
+        .Cells(1, 4).Value = "totalSets"
+        .Cells(1, 5).Value = "fullRevCounts"
+        .Cells(1, 6).Value = "falseRevs"
+        .Cells(1, 7).Value = "Incomplete"
+        .Cells(1, 8).Value = "failRev"
+        .Cells(1, 9).Value = "nearMiss"
+        .Cells(1, 10).Value = "AveLatency"
+        For iRowCount = 2 To 5
+            .Cells(iRowCount, 1).Value = "W" & Left(ActiveWorkbook.Name, 6)
+            '.Cells(irowcount,2).Value = "r1"
+            '.Cells().Value = vbnullstring
+        Next iRowCount
+        .Cells(2, 2).Value = strFirstRun
+        .Cells(3, 2).Value = strFirstRun
+        .Cells(4, 2).Value = strSecondRun
+        .Cells(5, 2).Value = strSecondRun
+        .Cells(2, 3).Value = str2Stim
+        .Cells(3, 3).Value = str3Stim
+        .Cells(4, 3).Value = str2Stim
+        .Cells(5, 3).Value = str3Stim
+        
+        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+        '' For the TrialToCrit Results
+        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+        .Cells(iRowOffset, 1).Value = "Subject"
+        .Cells(iRowOffset, 2).Value = "Run"
+        .Cells(iRowOffset, 3).Value = "stimSetNum"
+        .Cells(iRowOffset, 4).Value = "stimSetPic"
+        .Cells(iRowOffset, 5).Value = "stimNum"
+        .Cells(iRowOffset, 6).Value = "RevProper"
+        .Cells(iRowOffset, 7).Value = "TrialToCrit"
+        .Cells(iRowOffset, 8).Value = "ErrToCrit"
+        .Cells(iRowOffset, 9).Value = "TrialToRev"
+        .Cells(iRowOffset, 10).Value = "ErrToRev"
+        .Cells(iRowOffset, 11).Value = "AveRespLatency"
+        .Cells(iRowOffset, 12).Value = "critPhase"
+        .Cells(iRowOffset, 13).Value = "RowsToNewSet"
+        .Cells(iRowOffset, 14).Value = "BlanksToNewSet"
+        .Cells(iRowOffset, 15).Value = "BlanksFromNewToCrit"
+        .Cells(iRowOffset, 16).Value = "RowsToRevPhase"
+        .Cells(iRowOffset, 17).Value = "BlanksToRevPhase"
+        
+        .Cells(iRowOffset, 18).Value = "TimeToRev"
+        .Cells(iRowOffset, 19).Value = "TimeToCrit"
+        .Cells(iRowOffset, 20).Value = "TimeInPreRev"
+        .Cells(iRowOffset, 21).Value = "TimeInCrit"
+        .Cells(iRowOffset, 22).Value = "TimeSanityCheck"
+    End With
+End Sub
+
+Private Sub incrementCellCount(iRow, iCol)
+    With Sheets(behavDataSheet)
+        .Cells(iRow, iCol).Value = .Cells(iRow, iCol).Value + 1
+    End With
+End Sub
+
+Private Sub preventRunawayLoops(nameOfSub As String, startRow As Integer, numberOfSteps As Integer)
+    'just to stop a run-away loop from occurring
+    If Abs(numberOfSteps) > 100 Then
+        MsgBox ("row " & startRow & " has more than " & numberOfSteps & " trials after it? I don't think so. Am quiting now. Check: " & nameOfSub)
+        End
+    End If
+End Sub
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+''
+''  Functions
+''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Private Function calcAveLatencyByBlock(iFirstRow As Integer, iLastRow As Integer) As Double
+    'need to calc ave latencies separated by run and stimNum
+    Dim iRowStep As Integer
+    Dim strThisEventType As String
+    Dim strThisFirstCell As String
+    Dim strThisFeedback As String
+    Dim currentLatencyValue As Double
+    Dim LatencySum As Double
+    Dim LatencyCount As Integer
+    
+    calcAveLatencyByBlock = 0 'default value
+    LatencySum = 0
+    LatencyCount = 0
+    
+    For iRowStep = iFirstRow To iLastRow
+        strThisFirstCell = Cells(iRowStep, 1).Value
+        strThisFeedback = Cells(iRowStep, 3).Value
+        If strThisFirstCell <> vbNullString And strThisFirstCell <> strRunChangeTest And strThisFeedback <> strFeedNONE Then
+            currentLatencyValue = (Cells(iRowStep, intColRespTime).Value - Cells(iRowStep, intColStimOn).Value)
+            LatencySum = LatencySum + currentLatencyValue
+            LatencyCount = LatencyCount + 1
+        End If
+    Next iRowStep
+    
+    calcAveLatencyByBlock = LatencySum / LatencyCount
+
+End Function
+
+Private Sub calcAveLatencyByEventType(iFirstRow As Integer, iLastRow As Integer, iRevRow As Integer)
+    Dim iRowCount As Integer
+    Dim iOutputRow As Integer
+    Dim intColLatencySum As Integer
+    Dim intColLatencyCount As Integer
+    Dim dblTrialLatency As Double
+    Dim strThisFirstCell As String
+    Dim strThisFeedback As String
+    
+    intColLatencySum = 11
+    intColLatencyCount = 12
+    iOutputRow = whichRowToOutput(iRevRow)
+    If Cells(iRevRow, intColFinalEvents).Value = Cells(iRevRow, intColOrigEvents).Value Then
+        ' then must be a proper reversal row so continue with calculations
+        For iRowCount = iFirstRow To iLastRow
+            strThisFirstCell = Cells(iRowCount, 1).Value
+            strThisFeedback = Cells(iRowCount, 3).Value
+            If strThisFirstCell <> vbNullString And strThisFirstCell <> strRunChangeTest And strThisFeedback <> strFeedNONE Then
+                dblTrialLatency = Cells(iRowCount, intColRespTime).Value - Cells(iRowCount, intColStimOn).Value
+                With Worksheets(behavDataSheet)
+                    .Cells(iOutputRow, intColLatencySum).Value = .Cells(iOutputRow, intColLatencySum).Value + dblTrialLatency
+                    .Cells(iOutputRow, intColLatencyCount).Value = .Cells(iOutputRow, intColLatencyCount).Value + 1
+                End With
+            End If
+        Next iRowCount
+        With Worksheets(behavDataSheet)
+            .Cells(iOutputRow, intOutColAveLatency).Value = _
+                                    .Cells(iOutputRow, intColLatencySum).Value / .Cells(iOutputRow, intColLatencyCount).Value
+        End With
+    End If
+End Sub
+
+Private Function determineTrialType(iRowToCheck) As String
+    determineTrialType = "undefined" ' default answer
+    
+    With Worksheets(finalDataSheet)
+        determineTrialType = "r" & .Cells(iRowToCheck, intColRunNumber).Value & "_" & _
+                                                  .Cells(iRowToCheck, intColStimNumber).Value
+    End With
+End Function
+
+Private Function calcTypeOfReversal(rowNumber As Integer) As Integer
+    ' to check if this is a complete reversal, must check if last row in block is attractive face
+    Dim strNextFirstCell As String
+    Dim intCritCondition As Integer
+    Dim intConsecSelection As Integer
+    Dim intLastFeedBackOfBlock As Integer
+    Dim intLastRowOfBlock As Integer
+    
+    calcTypeOfReversal = 11 'this is default number and should never occur.
+                                            'yes I know it's a bad way to deal with it but tough. caveat emptor and all
+    
+    intLastRowOfBlock = findLastRowOfBlock(rowNumber)
+    strNextFirstCell = Cells(intLastRowOfBlock + 1, 1).Value
+    
+    If strNextFirstCell = vbNullString Then
+        'now have to check trial before and see if it was an attractive face or not
+        'this decides if it was a 'sucessful and complete' reversal block
+        intLastFeedBackOfBlock = Cells(intLastRowOfBlock, intColFeedbackType).Value
+        intCritCondition = Cells(intLastRowOfBlock, intColCriterionCount).Value
+        intConsecSelection = Cells(intLastRowOfBlock, intColConsecChoices).Value
+        If intCritCondition = intConsecSelection Then
+            'therefore must be to criterion but was it a 'false reversal'?
+            If (intLastFeedBackOfBlock = intFeedPos Or intLastFeedBackOfBlock = intFeedPrb) Then
+                'was true reversal
+                calcTypeOfReversal = intOutColRevCounts
+            ElseIf intLastFeedBackOfBlock = intFeedNeg Then
+                'was false reversal
+                calcTypeOfReversal = intOutColFalseRevs
+            Else
+                MsgBox ("intLastFeedBackOfBlock = " & intLastFeedBackOfBlock & " in calcTypeOfReversal!")
+                End
+           End If
+        Else
+            'must be an 'incomplete reversal' (ie at the end of a run)
+            calcTypeOfReversal = intOutColIncomplete
+        End If
+    Else
+        MsgBox ("intLastRowOfBlock=" & intLastRowOfBlock & ". Did not complete properly in calcTypeOfReversal!")
+    End If
+End Function
+
+Private Function calcTypeOfNewSet(rowNumber As Integer) As Integer
+    'need to check if this is a NewSet followed by a reversal segment
+    Dim strNextFirstCell As String
+    Dim strSecondFirstCell As String
+    Dim intLastRowOfBlock As Integer
+    
+    calcTypeOfNewSet = 11 'this is default number and should never occur.
+                                            'yes I know it's a bad way to deal with it but tough. caveat emptor and all
+    
+    intLastRowOfBlock = findLastRowOfBlock(rowNumber)
+    strNextFirstCell = Cells(intLastRowOfBlock + 1, 1).Value
+    strSecondFirstCell = Cells(intLastRowOfBlock + 2, 1).Value
+    
+    If strNextFirstCell = vbNullString Then
+        If (strSecondFirstCell = vbNullString Or Left(strSecondFirstCell, 5) = strRunChangeTest) Then
+            'this is the premature end of a newset block ie an 'incomplete block
+            calcTypeOfNewSet = intOutColIncomplete
+        Else
+            ' second cell is not empty and is not a runChange condition. ie trials continued
+            calcTypeOfNewSet = intOutColNewSetCounts
+        End If
+    Else
+        MsgBox ("intLastRowOfBlock=" & intLastRowOfBlock & ". Did not complete properly in calcTypeOfNewSetl!")
+    End If
+End Function
+
+Private Function calcWhatEventToWrite(iRow As Integer) As String
+    Dim strCritPhase As String
+    
+    strCritPhase = Cells(iRow, intColCritPhase).Value
+    If strCritPhase = strEventCritPhasePos Or strCritPhase = strEventCritPhasePrb Then
+        calcWhatEventToWrite = "r" & Cells(iRow, intColRunNumber).Value & "_" _
+                                                   & Cells(iRow, intColStimNumber).Value & "_" _
+                                                   & strEventAcqStay
+    Else
+        calcWhatEventToWrite = Cells(iRow, intColOrigEvents).Value
+    End If
+End Function
+
+Private Function findLastRowOfBlock(startRow As Integer) As Integer
+    Dim rowCount As Integer
+    Dim strNextFirstCell As String
+    
+    rowCount = 1 ' initialise variable
+    strNextFirstCell = Cells(startRow + rowCount, 1).Value
+    Do While strNextFirstCell <> vbNullString
+        rowCount = rowCount + 1
+        strNextFirstCell = Cells(startRow + rowCount, 1).Value
+        Call preventRunawayLoops("findLastRowOfBlock", startRow, rowCount)
+    Loop
+    
+    findLastRowOfBlock = startRow + rowCount - 1
+
+End Function
+
+Private Function findFirstRowOfBlock(startRow As Integer) As Integer
+    Dim rowCount As Integer
+    Dim strNextFirstCell As String
+    
+    rowCount = 1 ' initialise variable
+    strNextFirstCell = Cells(startRow - rowCount, 1).Value
+    Do While strNextFirstCell <> vbNullString
+        rowCount = rowCount + 1
+        strNextFirstCell = Cells(startRow - rowCount, 1).Value
+        Call preventRunawayLoops("findFirstRowOfBlock", startRow, rowCount)
+    Loop
+    
+    findFirstRowOfBlock = startRow - (rowCount - 1)
+
+End Function
+
+Private Function whichRowToOutput(iRow As Integer) As Integer
+'decide which row it will correspond to on output sheet
+    Dim iRunNumber As Integer
+    Dim strStimNumber As String
+    
+    iRunNumber = Cells(iRow, intColRunNumber).Value
+    strStimNumber = Cells(iRow, intColStimNumber).Value
+
+    If iRunNumber = 1 And strStimNumber = str2Stim Then
+        whichRowToOutput = intOutRow_r1_2stim
+    ElseIf iRunNumber = 1 And strStimNumber = str3Stim Then
+        whichRowToOutput = intOutRow_r1_3stim
+    ElseIf iRunNumber = 2 And strStimNumber = str2Stim Then
+        whichRowToOutput = intOutRow_r2_2stim
+    ElseIf iRunNumber = 2 And strStimNumber = str3Stim Then
+        whichRowToOutput = intOutRow_r2_3stim
+    Else
+        MsgBox ("err in function whichRowToOutput() if-then block")
+    End If
+End Function
+
+Private Function calcNumberOfTrials(intStartRow As Integer, intColToCount As Integer, strSearchString As String) As Integer
+    calcNumberOfTrials = -47 'default stupid number
+    Dim iCountOfRows As Integer
+    Dim iRow As Integer
+    Dim iNumberOfBlankRows As Integer
+    Dim strCurrentCellToTest As String
+    Dim strThisFirstCell As String
+    Dim strThisFeedCell As String
+    
+    iCountOfRows = 1
+    iNumberOfBlankRows = 0
+    Do
+        iRow = intStartRow - (iCountOfRows + iNumberOfBlankRows)
+        strThisFirstCell = Cells(iRow, 1).Value
+        strThisFeedCell = Cells(iRow, 3).Value
+        If strThisFirstCell <> vbNullString And strThisFeedCell <> strFeedNONE And Left(strThisFirstCell, 5) <> strRunChangeTest Then
+            strCurrentCellToTest = Cells(iRow, intColToCount).Value
+            iCountOfRows = iCountOfRows + 1
+        ElseIf strThisFirstCell = vbNullString Or strThisFeedCell = strFeedNONE Or Left(strThisFirstCell, 5) = strRunChangeTest Then
+            iNumberOfBlankRows = iNumberOfBlankRows + 1
+        Else
+            MsgBox ("problem in calcNumberOfTrials If-Block")
+        End If
+    Loop Until strCurrentCellToTest = strSearchString ' ie keep going till you find the next  event
+    
+    calcNumberOfTrials = iCountOfRows - 1 ' then remove the final increment made in the If-Block
+
+End Function
+
+Private Function countNumRowsToPrev(intStartRow As Integer, intColToCount As Integer, strSearchString As String) As Integer
+    Dim iRow As Integer
+    Dim iCountOfRows As Integer
+    Dim strCurrentCellToTest As String
+    iCountOfRows = 0
+    Do
+        iRow = intStartRow - iCountOfRows
+        strCurrentCellToTest = Cells(iRow, intColToCount).Value
+        iCountOfRows = iCountOfRows + 1
+    Loop Until strCurrentCellToTest = strSearchString ' ie keep going till you find the string
+    
+    countNumRowsToPrev = iCountOfRows - 1
+
+End Function
+
+Private Function countNumBlankRows(iEndRow As Integer, iStartRow As Integer) As Integer
+    Dim iRow As Integer
+    Dim iNumberOfBlankRows As Integer
+    Dim strThisFirstCell As String
+    Dim strThisFeedCell As String
+    
+    iNumberOfBlankRows = 0
+    For iRow = iStartRow To iEndRow
+        strThisFirstCell = Cells(iRow, 1).Value
+        strThisFeedCell = Cells(iRow, 3).Value
+        If strThisFirstCell = vbNullString Or strThisFeedCell = strFeedNONE Then 'Or Left(strThisFirstCell, 5) <> strRunChangeTest Then
+            iNumberOfBlankRows = iNumberOfBlankRows + 1
+        End If
+    Next iRow
+    
+    countNumBlankRows = iNumberOfBlankRows
+
+End Function
+
+Private Function countNumErrs(iEndRow As Integer, iStartRow As Integer) As Integer
+    Dim iRow As Integer
+    Dim iNumberOfRows As Integer
+    Dim strThisFeedback As Integer
+    Dim strThisFeedCell As String
+    Dim strThisFirstCell As String
+    
+    iNumberOfRows = 0
+    For iRow = iStartRow To iEndRow
+        strThisFirstCell = Cells(iRow, 1).Value
+        strThisFeedCell = Cells(iRow, 3).Value
+        strThisFeedback = Cells(iRow, intColFeedbackType).Value
+        If strThisFirstCell <> vbNullString And strThisFeedback = intFeedNeg And strThisFeedCell <> strFeedNONE Then
+            iNumberOfRows = iNumberOfRows + 1
+        End If
+    Next iRow
+    
+    countNumErrs = iNumberOfRows
+
+End Function
+
+'ErrChecking:
+'If Err.Number = 9 Then
+'   ' sheet does not exist, so create it
+'  Worksheets.Add.Name = behavDataSheet
+'   ' go back to the line of code that caused the problem
+'    Resume
+'End If

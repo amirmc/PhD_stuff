@@ -1,0 +1,85 @@
+Option Explicit
+
+Private Const collatedDataSheet = "AllBehavData"
+Private Const collatedTrialDataSheet = "TrialsToCrit"
+Private Const behavDataSheet = "BehavData"
+Private Const revCountDataCells = "A2:J5"
+Private Const RevCells = "E2:H5"
+
+
+Public Sub copyToBehavResultsBook()
+    Dim subjectWorkbook As String
+    subjectWorkbook = ActiveWorkbook.Name
+    
+    Call copyRevCountsAcross
+    Call revertToDataSheet(subjectWorkbook)
+    Call copyTrialsToCritAcross(subjectWorkbook)
+    Call revertToDataSheet(subjectWorkbook)
+End Sub
+
+Private Sub revertToDataSheet(originalDataBook As String)
+    Windows(originalDataBook).Activate
+    Worksheets(behavDataSheet).Activate
+    Application.CutCopyMode = False
+    Range("A1").Select
+End Sub
+
+Private Sub copyRevCountsAcross() '(dataSheet As String)
+    Call copyPasteStuff(revCountDataCells, collatedDataSheet)
+    'Call clearAllZeros
+    Range("A1").Select
+End Sub
+
+Private Sub clearAllZeros()
+    Worksheets(collatedDataSheet).Activate
+    Columns("D:G").Select
+    Cells.replace What:="0", Replacement:=vbNullString, LookAt:=xlWhole, _
+                                            SearchOrder:=xlByColumns, MatchCase:=True
+End Sub
+
+Private Sub copyTrialsToCritAcross(subjectDataBookName As String)
+    Dim intLastRowOfData As Integer
+    Dim intTopRowOfData As Integer
+    Dim CritTrialDataRange As String
+    
+    Windows(subjectDataBookName).Activate
+    Worksheets(behavDataSheet).Activate
+    intTopRowOfData = 10
+    intLastRowOfData = findBottomRowOfDataBlock(iRowOffset)
+    CritTrialDataRange = "A" & iRowOffset + 1 & ":V" & intLastRowOfData 'iRowOffset + Application.WorksheetFunction.Sum(Range(RevCells))
+    
+    Call copyPasteStuff(CritTrialDataRange, collatedTrialDataSheet)
+    Range("A1").Select
+End Sub
+
+
+Private Sub copyPasteStuff(dataRangeToCopy As String, worksheetToPasteInto As String)
+    Range(dataRangeToCopy).Copy
+    ThisWorkbook.Activate
+'    Windows("BehavResults4a.xls").Activate
+    Worksheets(worksheetToPasteInto).Activate
+    Range("A2").Select
+    Selection.Insert Shift:=xlDown
+End Sub
+
+
+Private Function findBottomRowOfDataBlock(startRow As Integer) As Integer
+    Dim rowCount As Integer
+    Dim strNextFirstCell As String
+    
+    rowCount = 1 ' initialise variable
+    strNextFirstCell = Cells(startRow + rowCount, 1).Value
+    Do While strNextFirstCell <> vbNullString
+        rowCount = rowCount + 1
+        strNextFirstCell = Cells(startRow + rowCount, 1).Value
+        'to preventRunawayLoops
+        If Abs(rowCount) > 100 Then
+            MsgBox ("row " & startRow & " has more than " & rowCount & _
+                            " trials after it? I don't think so. Am quiting now. Check: " & "copyTrialsToCritAcross")
+            End
+        End If
+    Loop
+    
+    findBottomRowOfDataBlock = startRow + rowCount - 1
+
+End Function

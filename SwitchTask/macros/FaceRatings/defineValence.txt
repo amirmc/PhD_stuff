@@ -1,0 +1,40 @@
+Option Explicit
+
+Private Const startRow = 2
+'Private Const endRow = 500
+Private Const leftCol = "A"
+Private Const rightCol = "F"
+Private Const noFaceValence = "Unseen"
+
+Private rowCount As Integer
+
+Public Sub getValences()
+    'Dim currentSheet As Object
+    rowCount = startRow - 1
+    'currentSheet = ActiveSheet.CodeName
+    With ActiveSheet
+        Do Until .Cells(rowCount + 1, 1).Value = ""
+            rowCount = rowCount + 1
+            .Cells(rowCount, 3).Value = getFaceValence(.Cells(rowCount, 2).Value)
+        Loop
+    End With
+End Sub
+
+Private Function getFaceValence(faceToCheck As String) As String
+    Dim facePic As String
+    Dim faceCount As Integer
+    
+    getFaceValence = noFaceValence ' this is default option in case no match is found
+    
+    faceCount = 0
+    With Sheet4
+        Do Until .Cells(faceCount + 1, 1).Value = ""
+            faceCount = faceCount + 1
+            facePic = .Cells(faceCount, 1).Value
+            If facePic = faceToCheck Then
+                getFaceValence = .Cells(faceCount, 2).Value
+                Exit Do ' exit loop once a match is found
+            End If
+        Loop
+    End With
+End Function

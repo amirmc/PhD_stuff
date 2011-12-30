@@ -1,0 +1,189 @@
+Option Explicit
+
+Private rowCount As Integer
+Private bCorrEvent As Boolean
+
+' overall constants used in program
+Private Const defaultSillyNumber = -47 ' if this appears in output then something's not working
+Private Const minRowCount = 1
+Private Const maxRowCount = 600
+Private Const feedPicEvent = "feedPic"
+Private Const feedPresEvent = "feedPres"
+
+' column numbers
+Private Const dataColFeedRating = 9 ' column I on sheet
+Private Const feedbackColRating = "I"
+
+Private Const outColFeedbackOnset = 14 ' column N on sheet
+Private Const outColFeedbackDuration = 15 ' column O on sheet
+Private Const outColRun = 16  ' column P on sheet
+Private Const outColFacePres = 31 ' column AE on sheet
+Private Const feedbackColOnset = "N"
+Private Const feedbackColDuration = "O"
+Private Const feedbackColFacePres = "AE"
+
+
+'Private Const outColNewSetSwitch = 23 ' column W on sheet
+Private Const outColEvents = 24 ' column X on sheet
+Private Const outColFeedEvents = 25 ' column Y on sheet
+
+Private Const outColStimOnset = 26 ' column Z on sheet
+Private Const outColStimDuration = 27 ' column AA on sheet
+Private Const stimuliColOnset = "Z"
+Private Const stimuliColDuration = "AA"
+
+Private Const outColStimEvent = 28 ' column AB on sheet
+Private Const outColPrbErrCritEvent = 29 ' column AC on sheet
+Private Const outColAllEvents = 30 ' column AD on sheet
+Private Const outColRedefinedEvents = 32 ' column AF on sheet
+
+Private Const fullRangeOfData = "A:AG"
+
+Private Const mainOutputFolder = "textFiles"
+
+
+Public Sub createEventTextFiles()
+    bCorrEvent = False
+
+    Call sortColumns(outColFeedEvents, "Y1")
+    Call writeToTextFiles(outColFeedEvents, feedbackColOnset, feedbackColDuration)
+
+'    Call sortColumns(outColEvents, "X1")
+'    Call writeToTextFiles(outColEvents, feedbackColOnset, feedbackColDuration)
+    
+    Call sortColumns(outColRedefinedEvents, "AF1")
+    Call writeToTextFiles(outColRedefinedEvents, feedbackColOnset, feedbackColDuration)
+    
+'    bCorrEvent = True
+'    Call sortColumns(outColRun, "P1")
+'    Call writeToTextFiles(outColRun, feedbackColOnset, feedbackColDuration)
+    bCorrEvent = False
+End Sub
+
+
+Private Sub sortColumns(whichColumn As Integer, columnName As String)
+    'Dim columnName As String
+    Dim otherColumn As String
+    
+    If columnName = "AB1" Then
+        otherColumn = stimuliColOnset & 1
+    Else
+        otherColumn = feedbackColOnset & 1 ' default
+    End If
+        
+    Columns(fullRangeOfData).Select
+    Selection.Sort Key1:=Range(columnName), Order1:=xlAscending, Key2:=Range(otherColumn) _
+        , Order2:=xlAscending, Header:=xlGuess, OrderCustom:=1, MatchCase:= _
+        False, Orientation:=xlTopToBottom
+
+    'Columns("A:AJ").Select
+    '    Selection.Sort Key1:=Range("AA1"), Order1:=xlAscending, Key2:=Range("N1") _
+        , Order2:=xlAscending, Header:=xlGuess, OrderCustom:=1, MatchCase:= _
+        False, Orientation:=xlTopToBottom, 'DataOption1:=xlSortNormal, DataOption2 _
+        :=xlSortNormal
+End Sub
+
+Private Sub writeToTextFiles(eventCol As Integer, colOnset As String, colDuration As String)
+    Dim prevRowForOutput As Integer
+    Dim adjustedRowCount As Integer
+'    Dim strEventCol As String
+    Dim currentEvent As String
+    Dim nextEvent As String
+    Dim eventToPass As String
+
+'    If eventCol = outColFeedEvents Then
+'        strEventCol = "AJ"
+'    ElseIf eventCol = outColEvents Then
+'        strEventCol = "AI"
+'    ElseIf eventCol = outColNewSetSwitch Then
+'        strEventCol = "AH"
+'    End If
+
+    prevRowForOutput = 0
+    For rowCount = minRowCount To maxRowCount
+        currentEvent = Cells(rowCount, eventCol).Value
+        nextEvent = Cells(rowCount + 1, eventCol).Value
+        
+        If currentEvent <> nextEvent Then
+            If bCorrEvent Then
+                ' run specific stuff relevant to feedbackCorr trials
+                eventToPass = "r" & currentEvent & "_" & feedPicEvent
+                Call writeFile(rowCount, prevRowForOutput + 1, eventToPass, feedbackColRating)
+                eventToPass = "r" & currentEvent & "_" & feedPresEvent
+                Call writeFile(rowCount, prevRowForOutput + 1, eventToPass, feedbackColFacePres)
+                currentEvent = "r" & currentEvent & "_" & "faceCorr"
+            End If
+            Call writeFile(rowCount, prevRowForOutput + 1, currentEvent, colOnset)
+            Call writeFile(rowCount, prevRowForOutput + 1, currentEvent, colDuration)
+            prevRowForOutput = rowCount
+        End If
+    Next rowCount
+End Sub
+
+Private Sub writeFile(lastRow As Integer, firstRow As Integer, eventName As String, outCol As String)
+    Dim startRange As String
+    Dim endRange As String
+    Dim totalRange As String
+    Dim textFileName As String
+    Dim newOutDir As String
+    
+    startRange = outCol & firstRow
+    endRange = outCol & lastRow
+    totalRange = startRange & ":" & endRange
+    
+    If outCol = feedbackColOnset Or outCol = stimuliColOnset Then
+        textFileName = "on_" & eventName
+    ElseIf outCol = feedbackColDuration Or outCol = stimuliColDuration Then
+        textFileName = "dur_" & eventName
+    ElseIf outCol = feedbackColRating Then
+        textFileName = "rate_" & eventName
+    ElseIf outCol = feedbackColFacePres Then
+        textFileName = "pres_" & eventName
+    Else
+        textFileName = "unknown_" & eventName
+    End If
+    
+    newOutDir = ThisWorkbook.Path & ":" & mainOutputFolder & ":" & "W" & Left(ActiveWorkbook.Name, 6)
+    Range(totalRange).Select
+    Selection.Copy
+    Workbooks.Add
+    Selection.PasteSpecial Paste:=xlValues, Operation:=xlNone, SkipBlanks:= _
+        False, Transpose:=False
+    Application.CutCopyMode = False
+    If Not bCheckFolderExists(newOutDir) Then MkDir newOutDir
+    ActiveWorkbook.SaveAs fileName:= _
+        newOutDir & ":" & textFileName & ".txt" _
+        , FileFormat:=xlText, CreateBackup:=False
+
+'        "Tiger:Users:Amir:Amir's Stuff: Work: Tasks:AffSwitchTask: ScannerTask:Calculations:textFiles:" & textFileName & ".txt" _
+        , FileFormat:=xlText, CreateBackup:=False
+    
+    'ActiveWindow.Close
+    ActiveWorkbook.Close False
+
+End Sub
+
+'Private Function numberOfEmptyRowsAtEnd(currentRow As Integer, currentCol As Integer) As Integer
+'    Dim rowNumber As Integer
+    
+'    numberOfEmptyRowsAtEnd = currentRow ' default
+'    rowNumber = currentRow
+'    Do While Cells(rowNumber, currentCol).Value = ""
+'        rowNumber = rowNumber - 1
+'    Loop
+'    numberOfEmptyRowsAtEnd = currentRow - rowNumber
+'End Function
+
+'Private Function numberOfRowsInRun(startRow As Integer, currentColumn As Integer) As Integer
+'    Dim rowCount As Integer
+'    rowCount = startRow
+'    Do Until Cells(rowCount + 1, currentColumn).Value = ""
+'        If Cells(rowCount, outColRun).Value <> Cells(rowCount + 1, outColRun).Value Then
+'            numberOfRowsInRun = rowCount
+'            Exit Function
+'        Else
+'            rowCount = rowCount + 1
+'        End If
+'    Loop
+'    numberOfRowsInRun = rowCount
+'End Function
