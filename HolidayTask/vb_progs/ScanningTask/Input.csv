@@ -1,0 +1,109 @@
+Holiday Title,Description,Condition,Incentive,Response,Trial,Page,ItemOrder
+Visiting Shamans in Brazil,Observe ancient techniques and plant knowledge used in healing practices that have been passed down through generations,HND,High,NoChoice,1,1,1
+Exploring the Amazon Rainforest,See this spectacular and untamed jungle which you can freely explore under the guidance of professional multilingual escorts,HND,High,NoChoice,1,1,2
+Trekking through Peru,Hike through unspoiled valleys away from all the tourist trails and see the small communities living as they did centuries ago,HND,High,NoChoice,1,1,3
+Visiting Hotsprings in Iceland,Relax in the bubbling hotsprings heated by the volcanic activity in this country of fire and ice and enjoy the Viking atmosphere,HND,High,NoChoice,1,2,1
+Dog Sled Racing in Sweden,Race your opponents through wide open landscapes into forests and onto the mountains with a pack of eager huskies,HND,High,NoChoice,1,2,2
+Reindeer Spotting in Finland,Travel with experienced guides and follow these magical animals as they migrate from the woodlands up in to the mountains,HND,High,NoChoice,1,2,3
+Soul Searching in India,Search your inner self whilst in this spiritually diverse country and let your journey carry you to where you might find answers,HND,High,NoChoice,1,3,1
+Climbing in the Himalayas,Reach the summit of a famous peak in the region and experience the awe inspiring beauty of the grand views and campsites,HND,High,NoChoice,1,3,2
+Trekking through Nepal,See villages and local practices while in a breathtakingly beautiful country with imposing mountainscapes and deep valleys,HND,High,NoChoice,1,3,3
+Coach Tour to Belgium,Travel from the UK to Belgium while stopping for day trips at interesting sights and attractions all aboard a well equipped coach,LD,Low,Choice,2,1,1
+Surfing in the Maldives,Surf among these sun-drenched coral islands from sunrise to sunset on mellow swells or walls of water in this ocean paradise,LD,Low,Choice,2,1,2
+Fruit Picking in Australia,Travel through this large open country where there is always a harvest waiting and enjoy the weather as you collect the crops,LD,Low,Choice,2,1,3
+Adventure Sports in New Zealand,Take part in a multitude of activities ranging from kayaking to caving in the country that is renowned for its adventure sports,LD,Low,Choice,2,2,1
+Caravan Park in Great Yarmouth,Stay in a caravan and enjoy one of the country's best beaches while taking part in the local events and attractions for all ages,LD,Low,Choice,2,2,2
+Wildfowl Shooting in North England,Find your quarry of wild duck or geese on the flatts and marshes in northern England and take in the peaceful surroundings,LD,Low,Choice,2,2,3
+Volcano Watching in Chile,Travel across some of the most beautiful regions in the country and see how lava rivers and lakes form this natural paradise,LD,Low,Choice,2,3,1
+Road Trip in New England,See the historic and unusual things that are representative of this state as you drive along the coast and through mountains,LD,Low,Choice,2,3,2
+Windsurfing in North Devon,Feel the thrill of surfing combined with the tranquillity of sailing as you glide over the water covering great distances with ease,LD,Low,Choice,2,3,3
+Staying in the Ice Hotel in Northern Sweden,Experience a truly unique stay in rooms sculpted by ice artists and with all the facilities you expect from a world famous hotel,HNA,High,Choice,3,1,1
+Travelling on the Trans-Siberian Railway,See huge contrasts in landscapes and cultures from the edge of Europe to the vastness of Siberia and the heart of the East,HNA,High,Choice,3,1,2
+Cage Diving with Sharks near Cape Town,Come face to face with some awesome predators of the sea as you dive in safety in a number of prime coastal locations,HNA,High,Choice,3,1,3
+Observing Wild Gorillas in Uganda,Come face to face with a troop of magnificent and intelligent creatures that inhabit the mountain rainforests of central Africa,HNA,High,Choice,3,2,1
+Sailing around the Greek Islands,Travel aboard a fully equipped yacht between the many Greek islands with their miles of sandy beaches and fragrant forests,HNA,High,Choice,3,2,2
+Trekking across the Sahara Desert,Hike between magnificent high and small dunes that undulate forever across the landscape and camp under a blanket of stars,HNA,High,Choice,3,2,3
+Visiting Ancient Temples in Cambodia,Explore ancient ruins from past civilisations and see some of the most breathtaking architectural masterpieces in the world,HNA,High,Choice,3,3,1
+Watching the Annual Bull Race in Spain,See these world famous races during the annual festival of a Spanish town and marvel as the many runners try to stay ahead,HNA,High,Choice,3,3,2
+Travelling on the Himalayan Road to Leh,Travel along the highest motorable roads in the world towards the thriving city of Leh sitting on the breathtaking Tibetan plateau,HNA,High,Choice,3,3,3
+Cattle Herding in North America,Stay on a ranch and experience the thrill of being a cowboy as you and a team herd cattle into pens in the open desert terrain,LND,Low,NoChoice,4,1,1
+Campervan Trip across Canada,See the dramatic scenery and wildlife while creating your own itinerary as you travel across this country in complete freedom,LND,Low,NoChoice,4,1,2
+Sampling Coffee Shops in Seattle,Discover this city's unique café culture as you take in the ambience and contrasting blends of the many independent outlets,LND,Low,NoChoice,4,1,3
+Vodka Tasting in Russia,Visit a country known for its famous Vodkas and sample many different varieties as you tour distilleries to see its production,LND,Low,NoChoice,4,2,1
+Driving from Istanbul to Cairo,Begin in Turkey's sprawling capital see sights such as desert scenery and cave dwellings on the drive toward bustling Cairo,LND,Low,NoChoice,4,2,2
+Volunteer Work in South Africa,Work with International and African volunteers on many UN-endorsed programs aimed at making a real and lasting difference,LND,Low,NoChoice,4,2,3
+Luxury Wildlife Tour of Rural Scotland,Travel in style as your guides help you to discover the beautiful glens and show you the variety of wildlife from Seals to Puffins,LND,Low,NoChoice,4,3,1
+Scuba Diving in Anglesey in Wales,Visit a bay with an exciting variety of dive sites and the added value of the gulf stream and the exotic sea-life that it supports,LND,Low,NoChoice,4,3,2
+Watercolour Painting in the Cotswolds,Learn about tone and colour as you let your creative juices run free on a taught course based in a small enchanting village,LND,Low,NoChoice,4,3,3
+Line Dancing in Nashville,Dance and learn from some of the greatest line dancing instructors around the world in the very heart and soul of Music City,LNA,Low,Choice,5,1,1
+Diving in the Indian Ocean,Dive in clear warm waters and see miles of coral and granite reef that are home to an amazing abundance of marine wildlife,LNA,Low,Choice,5,1,2
+Relaxing on a Desert Island,Let your cares slip away as you recline on sandy beaches and delight in the crystal blue waters of your very own retreat,LNA,Low,Choice,5,1,3
+Kitesurfing on the Australian Coast,Take to the waters of the coast with a board and a powerful kite to feel the excitement as you speed along the tops of waves ,LNA,Low,Choice,5,2,1
+Visiting Coffee Shops in Amsterdam,Sample these unique establishments which have become famous throughout the continent for their quality and atmosphere,LNA,Low,Choice,5,2,2
+Deep Sea Diving in the Mid-Atlantic,See some of the most exotic sights as you travel down thousands of feet to see amazing hydrothermal vents on the sea floor,LNA,Low,Choice,5,2,3
+Surfing in Hawaii,Visit the home of this sport where you will find top quality waves and huge swells that attract surfers from the whole world over,LNA,Low,Choice,5,3,1
+Clubbing in Berlin,Skip all the lines and stay up late as you discover the huge variety of music and venues available after hours in this vibrant city,LNA,Low,Choice,5,3,2
+Shopping in Tokyo,Find a mixture of traditional Japanese products as well as many hi-tech goods and the latest fashion in this brimming metropolis,LNA,Low,Choice,5,3,3
+Overland Trip through Vietnam,Develop a deep appreciation of this country as you travel from bustling city streets to more traditional highlands and valleys,HD,High,Choice,6,1,1
+Sight Seeing in Machu Pichu,View the achievements of the Inca culture and sample the lifestyle of the Andean people in the stunning mountain scenery,HD,High,Choice,6,1,2
+Camel Racing in Saudi Arabia,Watch modern professional jockeys as they relive old Bedouin traditions with animals considered man's best desert companion,HD,High,Choice,6,1,3
+Hiking through the Grand Canyon,See one of the wonders of the world close up as you travel across the arid land and through the national park on both sides,HD,High,Choice,6,2,1
+Gambling in Las Vegas Casinos,Experience the extravagance as you place bets on the craps table and coins in the slot machines in the world's gambling capital,HD,High,Choice,6,2,2
+Visiting St Petersburg in Russia,Known as the alternative capital of Russia this city has a booming European culture and some spectacular art collections,HD,High,Choice,6,2,3
+Exploring Ancient Ruins in Egypt,Visit one of the most spectacular sightseeing destinations in the world and see first hand the mysteries of ancient civilisations,HD,High,Choice,6,3,1
+Scuba Diving in Eastern Australia,Go to the best dive sites along the spectacular Great Barrier Reef and see countless varieties of marine life in the warm waters,HD,High,Choice,6,3,2
+Travelling through Rural Thailand,Spend time in this vibrant country of temples and markets and visit the hill tribes after making your way through scenic valleys,HD,High,Choice,6,3,3
+Visiting the Spas in Budapest,Unwind in some of the world's finest Turkish baths and therapeutic swimming pools with expert masseurs to help you fully relax,LND,Low,NoChoice,7,1,1
+Wine Tasting in Champagne,Enjoy sumptuous accommodation and first class dining as you discover the prestigious wines and history of this famous region,LND,Low,NoChoice,7,1,2
+Seeing Volcanoes in Iceland,See surreal landscapes of lava fields as you go on a tour of both the active and dormant volcanoes in this country of extremes,LND,Low,NoChoice,7,1,3
+Taking Flying Lessons in the USA,Get the best flight instruction from highly qualified and motivated flight instructors while you work towards certification,LND,Low,NoChoice,7,2,1
+Drinking and Dancing in Dublin Clubs,Experience the atmosphere and sample drinks in the many bars and taverns of this vibrant city with an international reputation,LND,Low,NoChoice,7,2,2
+Staying at a Health Spa in Reykjavik,Relax in this wonderful haven with geothermally heated lakes and swimming pools while you rejuvenate your body,LND,Low,NoChoice,7,2,3
+Learning to Cook in Tuscany,Join a famous Italian chef in the beautiful valley where you will learn the secrets of pastas to pastries and everything in between,LND,Low,NoChoice,7,3,1
+Skiing in the French Alps,Explore spectacular mountain scenery and glide across large glaciers surrounded by towering granite peaks in this skiing paradise,LND,Low,NoChoice,7,3,2
+Camping in West Scotland,Stay on the landscaped grounds near old castles where the tents blend with the peace and beauty of the surrounding countryside,LND,Low,NoChoice,7,3,3
+Staying in the Ice Hotel in Northern Sweden,Experience a truly unique stay in rooms sculpted by ice artists and with all the facilities you expect from a world famous hotel,HD,High,Choice,8,1,1
+Travelling on the Trans-Siberian Railway,See huge contrasts in landscapes and cultures from the edge of Europe to the vastness of Siberia and the heart of the East,HD,High,Choice,8,1,2
+Cage Diving with Sharks near Cape Town,Come face to face with some awesome predators of the sea as you dive in safety in a number of prime coastal locations,HD,High,Choice,8,1,3
+Observing Wild Gorillas in Uganda,Come face to face with a troop of magnificent and intelligent creatures that inhabit the mountain rainforests of central Africa,HD,High,Choice,8,2,1
+Sailing around the Greek Islands,Travel aboard a fully equipped yacht between the many Greek islands with their miles of sandy beaches and fragrant forests,HD,High,Choice,8,2,2
+Trekking across the Sahara Desert,Hike between magnificent high and small dunes that undulate forever across the landscape and camp under a blanket of stars,HD,High,Choice,8,2,3
+Visiting Ancient Temples in Cambodia,Explore ancient ruins from past civilisations and see one of the most breathtaking architectural masterpieces in the world,HD,High,Choice,8,3,1
+Watching the Annual Bull Race in Spain,See these world famous races during the annual festival of a Spanish town and marvel as the many runners try to stay in front,HD,High,Choice,8,3,2
+Travelling on the Himalayan Road to Leh,Travel along the highest motorable roads in the world towards the breathtaking city of Leh which thrives on the Tibetan plateau,HD,High,Choice,8,3,3
+Coach Tour to Belgium,Travel from the UK to Belgium while stopping for day trips at interesting sights and attractions all aboard a well equipped coach,LNA,Low,Choice,9,1,1
+Surfing in the Maldives,Surf among these sun-drenched coral islands on mellow swells or walls of water from sunrise to sunset in this ocean paradise,LNA,Low,Choice,9,1,2
+Fruit Picking in Australia,Travel through this large open country where there is always a harvest waiting and enjoy the weather as you collect the crops,LNA,Low,Choice,9,1,3
+Adventure Sports in New Zealand,Take part in a multitude of activities ranging from kayaking to caving in the country that is renowned for its adventure sports,LNA,Low,Choice,9,2,1
+Caravan Park in Great Yarmouth,Stay in a caravan and enjoy one of the country's best beaches while taking part in the local events and attractions for all ages,LNA,Low,Choice,9,2,2
+Wildfowl Shooting in North England,Find your quarry of wild duck or geese on the flatts and marshes in northern England and take in the peaceful surroundings,LNA,Low,Choice,9,2,3
+Volcano Watching in Chile,Travel across some of the most beautiful regions in the country and see how lava rivers and lakes form this natural paradise,LNA,Low,Choice,9,3,1
+Road Trip in New England,See the historic and unusual things that are representative of this state as you drive along the coast and through mountains,LNA,Low,Choice,9,3,2
+Windsurfing in North Devon,Feel the thrill of surfing combined with the tranquillity of sailing as you glide over the water covering great distances with ease,LNA,Low,Choice,9,3,3
+A Wildlife Safari in South Africa,Experience fantastic game viewing in unspoiled natural habitats and see the heart and soul of this magnificent old country,HND,High,NoChoice,10,1,1
+Observing Voodoo Ceremonies in Africa,Witness the rites of one of the oldest cultures on the planet in the birthplace of humankind and experience their old traditions,HND,High,NoChoice,10,1,2
+Visiting the Bazaars in Marrakech,Plunge into the maelstrom of passages in this metropolis with areas devoted to various crafts from cloth dying to slipper making,HND,High,NoChoice,10,1,3
+Swimming with Dolphins in Florida,Connect with these magnificent beings and join them in their natural habitat of the beautiful open waters of the Florida Keys,HND,High,NoChoice,10,2,1
+Polar Bear Spotting in Canada,Take part in a grand adventure travelling over snow and ice to track these powerful animals gathering before winter begins,HND,High,NoChoice,10,2,2
+Sunbathing on the Beach in Hawaii,Relax and enjoy the warm climate and transparent waters as you soak up the sun on one of Hawaii's pristine sand beaches,HND,High,NoChoice,10,2,3
+Sight Seeing in the City of Moscow,An ancient city built around the impressive citadel of the Kremlin with many famous sights and venues to enjoy music and arts,HND,High,NoChoice,10,3,1
+Driving across the width of Russia,Travel across the vast expanse of Russia as you take your vehicle through the hectic cities and undisturbed countryside,HND,High,NoChoice,10,3,2
+Walking Along the Great Wall of China,Experience a leisurely and picturesque journey along one of the symbols of the Chinese nation that took centuries to complete,HND,High,NoChoice,10,3,3
+Overland Trip through Vietnam,Develop a deep appreciation of this country as you travel from bustling city streets to more traditional highlands and valleys,HNA,High,Choice,11,1,1
+Sight Seeing in Machu Pichu,View the achievements of the Inca culture and sample the lifestyle of the Andean people in the stunning mountain scenery,HNA,High,Choice,11,1,2
+Camel Racing in Saudi Arabia,Watch modern professional jockeys as they relive old Bedouin traditions with animals considered man's best desert companion,HNA,High,Choice,11,1,3
+Hiking through the Grand Canyon,See one of the wonders of the world close up as you travel across the arid land and through the national park on both sides,HNA,High,Choice,11,2,1
+Gambling in Las Vegas Casinos,Experience the extravagance as you place bets on the craps table and coins in the slot machines in the worlds gambling capital,HNA,High,Choice,11,2,2
+Visiting St Petersburg in Russia,Known as the alternative capital of Russia this city has a booming European culture and some spectacular art collections,HNA,High,Choice,11,2,3
+Exploring Ancient Ruins in Egypt,Visit one of the most spectacular sightseeing destinations in the world and see first hand the mysteries of ancient civilisations,HNA,High,Choice,11,3,1
+Scuba Diving in Eastern Australia,Go to the best dive sites along the spectacular Great Barrier Reef and see countless varieties of marine life in the warm waters,HNA,High,Choice,11,3,2
+Travelling through Rural Thailand,Spend time in this vibrant country of temples and markets and visit the hill tribes after making your way through scenic valleys,HNA,High,Choice,11,3,3
+Line Dancing in Nashville,Dance and learn from the greatest line dancing instructors around the world as you in the very heart and soul of Music City,LD,Low,Choice,12,1,1
+Diving in the Indian Ocean,Dive in the clear warm waters and see miles of coral granite reef that are home to an amazing abundance of marine wildlife,LD,Low,Choice,12,1,2
+Relaxing on a Desert Island,Let your cares slip away as you recline on sandy beaches and delight in the crystal blue waters of your very own  retreat,LD,Low,Choice,12,1,3
+Kitesurfing on the Australian Coast,Take to the waters of the coast with a board and a powerful kite to feel the excitement as you speed along the tops of waves ,LD,Low,Choice,12,2,1
+Visiting Coffee Shops in Amsterdam,Sample these unique establishments which have become famous throughout the continent for their quality and atmosphere,LD,Low,Choice,12,2,2
+Deep Sea Diving in the Mid-Atlantic,See some of the most exotic sights as you travel down thousands of feet to see amazing hydrothermal vents on the sea floor,LD,Low,Choice,12,2,3
+Surfing in Hawaii,Visit the home of this sport where you will find top quality waves and huge swells that attract surfers from the whole world over,LD,Low,Choice,12,3,1
+Clubbing in Berlin,Skip all the lines and stay up late as you discover the huge variety of music and venues available after hours in this vibrant city,LD,Low,Choice,12,3,2
+Shopping in Tokyo,Find a mixture of traditional Japanese products as well as many hi-tech goods and the latest fashion in this brimming metropolis,LD,Low,Choice,12,3,3

@@ -1,0 +1,10 @@
+FHolidayTaskScans = 104, 105, 785, 425, C, 20, 172, 835, 663, C
+PETScanningModule = 0, 0, 681, 320, 
+FStartScreen = 19, 57, 700, 377, , 9, 3, 825, 514, C
+FMainScreen = 72, 88, 753, 408, C, -6, -2, 760, 441, C
+FTaskInfoScreen = 32, 46, 713, 366, C, -5, 39, 827, 474, C
+FPracticeTouch = 80, 100, 761, 420, C, -29, 5, 813, 489, C
+FPracticeMainScreen = 94, 101, 775, 420, C, -63, 22, 775, 500, C
+FPracticeScreen = 44, 44, 725, 364, , 36, 20, 717, 340, C
+FPracticeTaskInfoScreen = 107, 111, 788, 431, , 78, -2, 824, 471, C
+FPracticeTaskScans = 165, 170, 846, 490, , 71, 129, 752, 449, C

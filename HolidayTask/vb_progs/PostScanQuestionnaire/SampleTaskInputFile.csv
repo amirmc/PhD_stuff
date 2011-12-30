@@ -1,0 +1,109 @@
+Holiday Title,Description,Condition,Incentive,Response,Trial,Page,ItemOrder
+Visit through Salvador in Brazil,Experience the City of Joy in Brazil's most africanised state where the spicy dishes are still called by their African names,HD,High,Choice,1,1,1
+Exploring the Amazon Rainforest,See this spectacular and untamed jungle which you can freely explore under the guidance of professional multilingual escorts,HD,High,Choice,1,1,2
+A Dance Tour through Latin America,Travel throughout Latin America learning many different styles of dance from Samba to Rumba and everything in between,HD,High,Choice,1,1,3
+Swimming with Dolphins in the Bahamas,Connect with these magnificent beings and join them in their natural habitat of the beautiful open waters of the Caribbean,HD,High,Choice,1,2,1
+Island Hopping around the Caribbean,Visit the many different islands of the Caribbean and experience the local life on each as you travel throughout the region,HD,High,Choice,1,2,2
+A Trip to the City of Havana in Cuba,Visit the colonial palaces and cobbled streets and marvel at the Old Town as well as the making of world famous cigars ,HD,High,Choice,1,2,3
+Exploring Ancient Inca Cities in Peru,View the achievements of the Inca culture and sample the lifestyle of the Andean people in the stunning mountain scenery,HD,High,Choice,1,3,1
+Volcano Watching in Southern Chile,Travel across some of the most beautiful regions in the country and see how lava rivers and lakes form this natural paradise,HD,High,Choice,1,3,2
+Going to the Carnival in Rio de Janeiro,Experience the extravagance of one of the largest street festivals in the world with colourful costumes and exciting music,HD,High,Choice,1,3,3
+Seeing the Northern Lights in Sweden,See breathtakingly beautiful lights from a vantage point with crystal clear views and wide open spaces so that you miss nothing,LNA,Low,Choice,2,1,1
+Cruising around the Fjords of Norway,Embark on a cruise around the natural sights and take your time viewing the mountains and valleys of this picturesque region,LNA,Low,Choice,2,1,2
+Watching Reindeer Racing in Lapland,See this annual spectacle held by the local communities who rely on these creatures for transport across the snow covered lands,LNA,Low,Choice,2,1,3
+Whiskey Tour of Ireland,Visit the some of the oldest distilleries in the country which have perfected their special technique over many hundreds of years,LNA,Low,Choice,2,2,1
+Camping in West Scotland,Stay in the landscaped grounds of an old castle where the tents blend with the peace and beauty of the surrounding countryside,LNA,Low,Choice,2,2,2
+Pony Trekking in Wales,Enjoy some of the best riding terrain in one of the country's national parks as you explore the Welsh hills and valleys in comfort,LNA,Low,Choice,2,2,3
+Staying in a Hotel in Blackpool,Visit Britain's most popular resort with its famous beach and stage shows with many activities ranging from Golfing to Clubbing,LNA,Low,Choice,2,3,1
+Mountain Biking in Wales,Travel on a variety of bike trails in the many forests and valleys renowned throughout Europe for their excitement and diversity,LNA,Low,Choice,2,3,2
+Youth Hostelling on Dartmoor,Stay in a variety of different hostels from beautifully converted stables to renovated railway stations as you discover the Moor,LNA,Low,Choice,2,3,3
+Community Projects on the Mexican Coast,Volunteer work on the Pacific Coast of this remarkable country including a house construction project and time in a medical unit,LND,Low,NoChoice,3,1,1
+Watercolour Painting in the Cotswolds,Learn about tone and colour as you let your creative juices run free on a taught course based in a small enchanting village,LND,Low,NoChoice,3,1,2
+Deep Sea Diving in the Atlantic Ocean,See some of the most exotic sights as you travel down thousands of feet to see the amazing hydrothermal vents on the sea floor,LND,Low,NoChoice,3,1,3
+Mountain Climbing in the Himalayas,Reach the summit of a famous peak in the region and experience the awe inspiring beauty of the campsites and grand views,LND,Low,NoChoice,3,2,1
+Taking Flying Lessons in the USA,Get the best quality flight instruction from highly qualified and motivated flight instructors while you work towards certification,LND,Low,NoChoice,3,2,2
+Mountaineering in North America,Meet the challenges of North America's peaks and be rewarded by the overwhelming views and a wonderful sense of achievement,LND,Low,NoChoice,3,2,3
+Sunbathing on the Kenyan Coast,Enjoy the sun while you recline on a vast uninterrupted stretch of white sand lapped by the ocean in this sun-seeker's heaven,LND,Low,NoChoice,3,3,1
+Luxury Cruise around the World,Be pampered aboard a magnificent ocean liner as it travels leisurely across the globe and enjoy the on-board entertainment,LND,Low,NoChoice,3,3,2
+Camel Racing in Saudi Arabia,Watch modern professional jockeys as they relive old Bedouin traditions with animals considered man's best desert companion,LND,Low,NoChoice,3,3,3
+Shopping in New York City,The city that never sleeps with funky boutiques and international brands and some of the best fashion outlets in the world,HNA,High,Choice,4,1,1
+Road Trip across the USA,Sit back and experience the true diversity of America with small towns and roadside curiosities that large cities cannot offer,HNA,High,Choice,4,1,2
+Parachuting in California,Try this exhilarating sport in perfect weather conditions and see the world from a bird's perspective with expert instructors,HNA,High,Choice,4,1,3
+Walking in the Highlands of Scotland,See the country in the best way giving you a real experience of the natural and rugged beauty of this varied landscape,HNA,High,Choice,4,2,1
+Strolling through the Lake District,Visit an area of breathtaking natural beauty with rivers and lakes while passing market towns and charming sleepy villages,HNA,High,Choice,4,2,2
+Visiting the Bars and Pubs of Dublin,Experience the atmosphere and sample drinks in the taverns and bars of this vibrant city with its international reputation,HNA,High,Choice,4,2,3
+Sailing round the Greek Islands,Travel aboard a fully equipped yacht between the many Greek islands with their miles of sandy beaches and fragrant forests,HNA,High,Choice,4,3,1
+Taking in the Sights of Vienna,Visit a city of magnificent architecture and a harmonious atmosphere with its renowned rich musical and artistic heritage,HNA,High,Choice,4,3,2
+Gastronomic Tour of South Italy,Sample true Italian cuisine as you travel the southern regions visiting the birthplace of pizza and spaghetti with meatballs,HNA,High,Choice,4,3,3
+Wine Tasting in Champagne,Enjoy sumptuous accommodation and first class dining as you discover the prestigious wines and history of this famous region,LD,Low,Choice,5,1,1
+Learning to Cook in Tuscany,Join a famous Italian chef in the beautiful valley where you will learn the secrets of pastas and pastries and everything in between,LD,Low,Choice,5,1,2
+Backpacking around Europe,Visit the many diverse countries of this continent with the freedom to plan your own journey and everything you need on your back,LD,Low,Choice,5,1,3
+Visiting the Bazaars of Marrakech,Plunge into the maelstrom of passages in this metropolis with areas devoted to various crafts from cloth dying to slipper makers,LD,Low,Choice,5,2,1
+Trekking through the Sahara Desert,Hike between magnificent high and small dunes that undulate forever across the landscape and camp under a blanket of stars,LD,Low,Choice,5,2,2
+Rock Climbing in Tanzania in Africa,Make your way up the superb rock with qualified instructors and amazing views from the top of the many challenging climbs,LD,Low,Choice,5,2,3
+Bird Watching on Bali Island,Get to the most exciting yet accessible locations for viewing thousands of birds many of which are endemic to the island of Bali,LD,Low,Choice,5,3,1
+Sailing along the Great Barrier Reef,Travel aboard a fully equipped luxury yacht as you sail along the length of the reef and discover the abundant aquatic life beneath,LD,Low,Choice,5,3,2
+Backpacking across Australia,Visit the gem of south east Asia with its crowded bazaars and ancient temples all set against the best scenery in the region,LD,Low,Choice,5,3,3
+White Water Rafting down the Amazon River,Discover the magic of rafting on this world famous river with both the thrill of whitewater and the  serenity of a floating trip,HND,High,NoChoice,6,1,1
+Walking in the Foothills of the Nepalese Mountains,See villages and local practices while in a breathtakingly beautiful country with imposing mountainscapes and deep valleys,HND,High,NoChoice,6,1,2
+Driving Holiday through the Indian Subcontinent,Witness the many different sides of this distinctive country as you drive through the bustling cities to the older villages ,HND,High,NoChoice,6,1,3
+Snowboarding in the Dolomites in Italy,Make your way down pristine mountains with many slopes for all abilities and perfect snow and sun throughout your visit,HND,High,NoChoice,6,2,1
+Walking Along the Great Wall of China,Experience a leisurely picturesque journey along one of the symbols of the Chinese nation that took centuries to complete,HND,High,NoChoice,6,2,2
+Exploring Buddhist Temples in Kyoto,Visit a city of countless shrines and other historically priceless structures that hold a quarter of Japan's national treasures,HND,High,NoChoice,6,2,3
+Cruising along the Nile,Travel in comfort aboard a floating hotel as you leisurely pass the countryside and stop at key locations for sightseeing,HND,High,NoChoice,6,3,1
+Driving across Europe,Take to the open road as you create your own itinerary and visit the major cities from East to West on this overland journey,HND,High,NoChoice,6,3,2
+A Trip to St Petersburg,Known as the alternative capital of Russia this city has a booming European culture and some spectacular art collections,HND,High,NoChoice,6,3,3
+Seeing the Northern Lights in Sweden,See breathtakingly beautiful lights from a vantage point with crystal clear views and wide open spaces so that you miss nothing,LD,Low,Choice,7,1,1
+Cruising around the Fjords of Norway,Embark on a cruise around the natural sights and take your time viewing the mountains and valleys of this picturesque region,LD,Low,Choice,7,1,2
+Watching Reindeer Racing in Lapland,See this annual spectacle held by the local communities who rely on these creatures for transport across the snow covered lands,LD,Low,Choice,7,1,3
+Whiskey Tour of Ireland,Visit the some of the oldest distilleries in the country which have perfected their special technique over many hundreds of years,LD,Low,Choice,7,2,1
+Camping in West Scotland,Stay in the landscaped grounds of an old castle where the tents blend with the peace and beauty of the surrounding countryside,LD,Low,Choice,7,2,2
+Pony Trekking in Wales,Enjoy some of the best riding terrain in one of the country's national parks as you explore the Welsh hills and valleys in comfort,LD,Low,Choice,7,2,3
+Staying in a Hotel in Blackpool,Visit Britain's most popular resort with its famous beach and stage shows with many activities ranging from Golfing to Clubbing,LD,Low,Choice,7,3,1
+Mountain Biking in Wales,Travel on a variety of bike trails in the many forests and valleys renowned throughout Europe for their excitement and diversity,LD,Low,Choice,7,3,2
+Youth Hostelling on Dartmoor,Stay in a variety of different hostels from beautifully converted stables to renovated railway stations as you discover the Moor,LD,Low,Choice,7,3,3
+Visit through Salvador in Brazil,Experience the City of Joy in Brazil's most africanised state where the spicy dishes are still called by their African names,HNA,High,Choice,8,1,1
+Exploring the Amazon Rainforest,See this spectacular and untamed jungle which you can freely explore under the guidance of professional multilingual escorts,HNA,High,Choice,8,1,2
+A Dance Tour through Latin America,Travel throughout Latin America learning many different styles of dance from Samba to Rumba and everything in between,HNA,High,Choice,8,1,3
+Swimming with Dolphins in the Bahamas,Connect with these magnificent beings and join them in their natural habitat of the beautiful open waters of the Caribbean,HNA,High,Choice,8,2,1
+Island Hopping around the Caribbean,Visit the many different islands of the Caribbean and experience the local life on each as you travel throughout the region,HNA,High,Choice,8,2,2
+A Trip to the City of Havana in Cuba,Visit the colonial palaces and cobbled streets and marvel at the Old Town as well as the making of world famous cigars ,HNA,High,Choice,8,2,3
+Exploring Ancient Inca Cities in Peru,View the achievements of the Inca culture and sample the lifestyle of the Andean people in the stunning mountain scenery,HNA,High,Choice,8,3,1
+Volcano Watching in Southern Chile,Travel across some of the most beautiful regions in the country and see how lava rivers and lakes form this natural paradise,HNA,High,Choice,8,3,2
+Going to the Carnival in Rio de Janeiro,Experience the extravagance of one of the largest street festivals in the world with colourful costumes and exciting music,HNA,High,Choice,8,3,3
+Visiting the Museums of Amsterdam,Tour the multitude of museums in this cosmopolitan city from the famous galleries to the less well known vaults and stores,HND,High,NoChoice,9,1,1
+Visiting the sights of New Zealand,See the contrasts of landscapes from glaciers to boiling mud pools and forests to dazzling harbours on this unforgettable trip,HND,High,NoChoice,9,1,2
+Going to a Masked Ball in Venice,Select your costume and sample the city's delights before taking part in an extravagant occasion of fine food and dancing,HND,High,NoChoice,9,1,3
+Elephant Safari in Northern India,An exhilarating experience you will be taken on an informative tour of the wildlife reserve travelling on the back of an Elephant,HND,High,NoChoice,9,2,1
+Hiking through Bali National Park,Let experienced guides take you through a national reserve and show you the famous wildlife only found in these regions,HND,High,NoChoice,9,2,2
+Sunbathing on the Beach in Hawaii,Relax and enjoy the warm climate and transparent waters as you soak up the sun on one of Hawaii's pristine sand beaches,HND,High,NoChoice,9,2,3
+Whale Spotting in Antarctica,A unique opportunity to reach the end of the world and explore the chill blue waters while observing these graceful creatures,HND,High,NoChoice,9,3,1
+Sight Seeing in Edinburgh,Explore the beautiful multicultural city that is the Scottish capital which has maintained its old world atmosphere and charm,HND,High,NoChoice,9,3,2
+Snorkelling in the Seychelles,See amazing and colourful varieties of fish and aquatic life as you float through the clear blue waters of this island paradise,HND,High,NoChoice,9,3,3
+Wine Tasting in Champagne,Enjoy sumptuous accommodation and first class dining as you discover the prestigious wines and history of this famous region,LNA,Low,Choice,10,1,1
+Learning to Cook in Tuscany,Join a famous Italian chef in the beautiful valley where you will learn the secrets of pastas and pastries and everything in between,LNA,Low,Choice,10,1,2
+Backpacking around Europe,Visit the many diverse countries of this continent with the freedom to plan your own journey and everything you need on your back,LNA,Low,Choice,10,1,3
+Visiting the Bazaars of Marrakech,Plunge into the maelstrom of passages in this metropolis with areas devoted to various crafts from cloth dying to slipper makers,LNA,Low,Choice,10,2,1
+Trekking through the Sahara Desert,Hike between magnificent high and small dunes that undulate forever across the landscape and camp under a blanket of stars,LNA,Low,Choice,10,2,2
+Rock Climbing in Tanzania in Africa,Make your way up the superb rock with qualified instructors and amazing views from the top of the many challenging climbs,LNA,Low,Choice,10,2,3
+Bird Watching on Bali Island,Get to the most exciting yet accessible locations for viewing thousands of birds many of which are endemic to the island of Bali,LNA,Low,Choice,10,3,1
+Sailing along the Great Barrier Reef,Travel aboard a fully equipped luxury yacht as you sail along the length of the reef and discover the abundant aquatic life beneath,LNA,Low,Choice,10,3,2
+Backpacking across Australia,Visit the gem of south east Asia with its crowded bazaars and ancient temples all set against the best scenery in the region,LNA,Low,Choice,10,3,3
+Shopping in New York City,The city that never sleeps with funky boutiques and international brands and some of the best fashion outlets in the world,HD,High,Choice,11,1,1
+Road Trip across the USA,Sit back and experience the true diversity of America with small towns and roadside curiosities that large cities cannot offer,HD,High,Choice,11,1,2
+Parachuting in California,Try this exhilarating sport in perfect weather conditions and see the world from a bird's perspective with expert instructors,HD,High,Choice,11,1,3
+Walking in the Highlands of Scotland,See the country in the best way giving you a real experience of the natural and rugged beauty of this varied landscape,HD,High,Choice,11,2,1
+Strolling through the Lake District,Visit an area of breathtaking natural beauty with rivers and lakes while passing market towns and charming sleepy villages,HD,High,Choice,11,2,2
+Visiting the Bars and Pubs of Dublin,Experience the atmosphere and sample drinks in the taverns and bars of this vibrant city with its international reputation,HD,High,Choice,11,2,3
+Sailing round the Greek Islands,Travel aboard a fully equipped yacht between the many Greek islands with their miles of sandy beaches and fragrant forests,HD,High,Choice,11,3,1
+Taking in the Sights of Vienna,Visit a city of magnificent architecture and a harmonious atmosphere with its renowned rich musical and artistic heritage,HD,High,Choice,11,3,2
+Gastronomic Tour of South Italy,Sample true Italian cuisine as you travel the southern regions visiting the birthplace of pizza and spaghetti with meatballs,HD,High,Choice,11,3,3
+Staying at a Spa in Reykjavik,Relax in this wonderful haven with geothermally heated lakes and swimming pools while your body is cleansed and  rejuvenated,LND,Low,NoChoice,12,1,1
+Vodka Tasting in Russia,Visit a country known for its famous Vodkas and sample many different varieties as you tour the distilleries to see its production,LND,Low,NoChoice,12,1,2
+Gambling in Las Vegas,Experience the extravagance as you place bets on the craps table and coins in the slot machines in the worlds gambling capital,LND,Low,NoChoice,12,1,3
+Sushi and Karaoke in Japan,Relax and unwind the way the Japanese do with some of your favourite songs while enjoying some freshly prepared local cuisine,LND,Low,NoChoice,12,2,1
+Learning Spanish in Ecuador,Immerse yourself and learn to speak the language the way the locals do as you take lessons in this South American country,LND,Low,NoChoice,12,2,2
+Hangliding in North Carolina,Feel the gentle breeze in your face as you glide over sand dunes after expert guidance from internationally qualified instructors,LND,Low,NoChoice,12,2,3
+Scuba Diving in Finland,Explore the chill underwater world of the Baltic sea with its beautifully preserved ship wrecks and the many types of marine life,LND,Low,NoChoice,12,3,1
+Sea Kayaking in Turkey,Paddle your way through clear waters of the Turkish coast as you discover the most fun method of transport in the Mediterranean,LND,Low,NoChoice,12,3,2
+A Luxury trip to Lanzarotte,Stay on the most elegant of the Canary Islands with the blue Ocean only metres from you door as you enjoy five-star treatment,LND,Low,NoChoice,12,3,3

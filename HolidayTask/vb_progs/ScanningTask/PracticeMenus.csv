@@ -1,0 +1,10 @@
+Holiday Title,Description,Condition,Incentive,Response,Trial,Page,ItemOrder
+Visiting the Great Lakes of North America,Experience the sheer magnitude of these world famous lakes as you travel across several states and borders to see them all,HD,High,Choice,1,1,1
+A Trip to the South of Greenland,See historic Viking sights and Eskimo ruins while sampling the modern day cities where old traditions are a part of life,HD,High,Choice,1,1,2
+Trekking though Madagascar,Visit this kaleidoscopic island and encounter the vast array of indigenous wildlife as well as many local tribes and cultures,HD,High,Choice,1,1,3
+Riding Horses in North Patagonia,Ride deep into the heart of the Andes while entering dense forests and crossing powerful rivers in areas untouched by humans,HND,High,NoChoice,2,1,1
+Trekking up a Volcano in Argentina,Make your way up to the rim of the most active volcano in Patagonia and marvel at lunar landscapes and spectacular views,HND,High,NoChoice,2,1,2
+Skiing in the Andean Mountains,Travel through unique forests and ski down the slopes of snow covered volcanoes in this exhilarating and unusual adventure,HND,High,NoChoice,2,1,3
+Exploring the City of Chicago,Sample all this world famous city can offer from the tallest building to legendary blues bars and cuisine from the whole world over,HNA,High,Choice,3,1,1
+Yachting in the Virgin Islands,Cruise between these magnificent islands considered one of the finest sailing locations in the world with freedom to explore anywhere,HNA,High,Choice,3,1,2
+Snowmobiling in Australia,Speed over the crisp untouched snow in a spectacular national park and enjoy the astounding views of the majestic mountains,HNA,High,Choice,3,1,3
